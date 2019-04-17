@@ -1,0 +1,12 @@
+{
+    "name": "Saving-Editor",
+    "references": [
+        "Saving"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false
+}
