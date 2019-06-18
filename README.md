@@ -4,6 +4,8 @@ Save system that is developed to co-exist with the current component system of U
 It is designed to be additive of nature, meaning you can slap it on any game object.
 And it will save it individually, based on the randomized GUID that is generated. You can modify this to your liking.
 
+
+## How it looks in the editor
 ![Image of the saveable component](https://github.com/AlexMeesters/ComponentSaveSystem/blob/master/Images/Component-Clean.PNG)
 
 
