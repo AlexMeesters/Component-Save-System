@@ -2,6 +2,10 @@
 Save system that is developed to co-exist with the current component system of Unity.
 
 ## Another save system for Unity? There are plenty...
+
+How this solution differs from others is that it is made to be additive.
+Meaning that you can slap a Saveable component on as many GameObjects as you like. And it would still work without any extra trouble.
+
 It is designed to be additive of nature, meaning you can slap it on any game object.
 And it will save it individually, based on the randomized GUID that is generated. You can modify this to your liking.
 
