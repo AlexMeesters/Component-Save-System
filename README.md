@@ -12,7 +12,12 @@ This is useful in case you want to be able to easily save the state of multiple 
 
 ![Image of the saveable component](https://github.com/AlexMeesters/ComponentSaveSystem/blob/master/Images/Component-Clean.PNG)
 
-The component above searches for 
+The component above searches through all the components that implement ISaveable.
+It does this during editor-time to improve startup time, preventing a lot of get component calls.
+
+
+![Image of the saveable component](https://github.com/AlexMeesters/ComponentSaveSystem/blob/master/Images/Component-AddedSampleComponents.PNG)
+
 
 ```csharp
 using Lowscope.Saving;
