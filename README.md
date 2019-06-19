@@ -105,7 +105,7 @@ SaveMaster.SetSlotToLastUsedSlot(bool syncListeners)
 SaveMaster.LoadLastUsedSlot()
 
 // Attempts to set the slot to the first unused slot. Useful for creating a new game.
-SaveMaster.SetSlotToFirstUnused(bool syncListenersout int slot)
+SaveMaster.SetSlotToFirstUnused(bool syncListeners, out int slot)
 
 // Will load the last used scene for save game, and set the slot. 
 // Current scene also gets saved, if any slot is currently set. (And if AutoSaveOnSlotSwitch is on)
