@@ -15,8 +15,9 @@ A component that fetches all components that implement ISaveable.
 
 ![Image of the saveable component](https://github.com/AlexMeesters/ComponentSaveSystem/blob/master/Images/Component-AddedSampleComponents.PNG)
 
-The image above is with [all pre-made components](https://github.com/AlexMeesters/ComponentSaveSystem/tree/master/Assets/Plugins/Lowscope/ComponentSaveSystem/Components) added that implement ISaveable.                   Once added they get fetched directly.              
-Thanks to [the UnityValidateHierarchy](https://github.com/AlexMeesters/UnityValidateHierarchy) script.
+The image above is with [all pre-made components](https://github.com/AlexMeesters/ComponentSaveSystem/tree/master/Assets/Plugins/Lowscope/ComponentSaveSystem/Components) added that implement ISaveable. Once added they get fetched directly.              
+
+[the UnityValidateHierarchy](https://github.com/AlexMeesters/UnityValidateHierarchy) makes it possible to do this on hierarchy changes.
 
 Here is an example of how to create your own script:
 
