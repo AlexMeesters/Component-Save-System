@@ -73,6 +73,10 @@ public class ExampleScript : MonoBehaviour, ISaveable
 
 ```
 
+## How to use
+
+
+
 ## Performance tests (I7 8700K and SSD)
 
 Keep in mind that in normal circumstances, you would not sync 4000 components at a time, unless you do it explicitly.
