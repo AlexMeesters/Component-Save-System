@@ -84,9 +84,9 @@ Each object contains 4 saveable components:
 * Save Visibility
 
 On a i7 8700K:
-- 1000 Object Sync & Write to disk : 18 Milliseconds
-- 1000 Object Sync & Load to disk: 26 Milliseconds
-- 1000 Object Sync Save: 9 Milliseconds
+- 1000 Object Sync & Write to disk : ~18 Milliseconds
+- 1000 Object Sync & Load to disk: ~26 Milliseconds
+- 1000 Object Sync Save: ~9 Milliseconds
 - 1000 Object Sync Load: ~15 Milliseconds
 
 Resulting filesize:
