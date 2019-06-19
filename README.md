@@ -8,11 +8,11 @@ This comes with the benefit that each object that has a component called "Saveab
 You could duplicate 50 objects that use the same components that implement ISaveable. And all these objects would still get saved individually. Since a Saveable Component has a global unique identifier, and duplicates are not allowed, so a new ID gets generated.
 This is useful in case you want to be able to easily save the state of multiple NPCS.
 
-## How it looks in the editor
+## How does it work?
+
 ![Image of the saveable component](https://github.com/AlexMeesters/ComponentSaveSystem/blob/master/Images/Component-Clean.PNG)
 
-
-## How does it work?
+The component above searches for 
 
 ```csharp
 using Lowscope.Saving;
