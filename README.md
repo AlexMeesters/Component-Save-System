@@ -15,7 +15,7 @@ A component that fetches all components that implement ISaveable.
 
 ![Image of the saveable component](https://github.com/AlexMeesters/ComponentSaveSystem/blob/master/Images/Component-AddedSampleComponents.PNG)
 
-Example with [all pre-made components](https://github.com/AlexMeesters/ComponentSaveSystem/tree/master/Assets/Plugins/Lowscope/ComponentSaveSystem/Components) that use the ISaveable. Once added they get fetched directly.              
+The image above is with [all pre-made components](https://github.com/AlexMeesters/ComponentSaveSystem/tree/master/Assets/Plugins/Lowscope/ComponentSaveSystem/Components) added that implement ISaveable. Once added they get fetched directly.              
 Thanks to [the UnityValidateHierarchy](https://github.com/AlexMeesters/UnityValidateHierarchy) script.
 
 Here is an example of how to create your own script:
@@ -58,14 +58,13 @@ public class ExampleScript : MonoBehaviour, ISaveable
 }
 ```
 
-## How the save file looks like with the example above:
+## How the save file looks like with just the ExampleScript:
 
 ```json
 
 ß{"metaData":{"gameVersion":0,"creationDate":"6/19/2019 2:16:52 AM","timePlayed":"00:00:02","lastActiveScene":"TestScene","lastAdditiveScenes":[]},"saveData":[{"guid":"TestScene-GameObject-d5f95","data":"{\"saveStructures\":[{\"identifier\":\"ExampleScript 915ce\",\"data\":\"{\\\"Name\\\":\\\"Test\\\",\\\"Experience\\\":25,\\\"Health\\\":25}\"}]}"}]}
 
 ```
-
 
 
 ## Architecture of the system
