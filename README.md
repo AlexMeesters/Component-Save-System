@@ -81,7 +81,7 @@ Each object contains 4 saveable components:
 * Save Scale
 * Save Visibility
 
-### Test with 1000 objects (Non-Random positions and rotations)
+### Test with 1000 objects (Non-Random positions, scale and rotations)
 
 On a i7 8700K:
 - 1000 Object Sync & Write to disk : ~18 Milliseconds
@@ -90,17 +90,17 @@ On a i7 8700K:
 - 1000 Object Sync Load: ~15 Milliseconds
 
 Resulting filesize:
+* Pretty Print: 395 KB
+* Non-pretty Print: 238 KB
 
-Pretty Print: 395 KB
-Non-pretty Print: 238 KB
-
-### Test with 1000 objects (Randomized positions and rotations)
+### Test with 1000 objects (Randomized positions, scale and rotations)
 
 On a i7 8700K:
-- 1000 Object Sync & Write to disk : ~31 Milliseconds
-- 1000 Object Sync & Load to disk: ~48 Milliseconds
+- 1000 Object Sync & Write to disk : ~26 Milliseconds
+- 1000 Object Sync & Load to disk: ~38 Milliseconds
 - 1000 Object Sync Save: ~12 Milliseconds
 - 1000 Object Sync Load: ~21 Milliseconds
 
 Resulting filesize:
-809 KB
+* Pretty Print: 809 KB
+* Non-pretty Print: 601 KB
