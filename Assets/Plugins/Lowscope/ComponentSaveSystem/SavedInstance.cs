@@ -1,28 +1,31 @@
 ﻿using UnityEngine;
-using System.Collections;
 using Lowscope.Saving.Components;
 using Lowscope.Saving;
+using Lowscope.Saving.Core;
 
-/// <summary>
-/// Saved instances are objects that should respawn when they are not destroyed.
-/// </summary>
-public class SavedInstance : MonoBehaviour
+namespace Lowscope.Saving
 {
-    private SaveInstanceManager instanceManager;
-    private Saveable saveable;
- 
-    public void Configure(Saveable saveable, SaveInstanceManager instanceManager)
+    /// <summary>
+    /// Saved instances are objects that should respawn when they are not destroyed.
+    /// </summary>
+    public class SavedInstance : MonoBehaviour
     {
-        this.saveable = saveable;
-        this.instanceManager = instanceManager;
-    }
+        private SaveInstanceManager instanceManager;
+        private Saveable saveable;
 
-    private void OnDestroy()
-    {
-        if (SaveMaster.DeactivatedObjectExplicitly(this.gameObject))
+        public void Configure(Saveable saveable, SaveInstanceManager instanceManager)
         {
-            SaveMaster.WipeData(saveable);
-            instanceManager.DestroyObject(saveable);
+            this.saveable = saveable;
+            this.instanceManager = instanceManager;
+        }
+
+        private void OnDestroy()
+        {
+            if (SaveMaster.DeactivatedObjectExplicitly(this.gameObject))
+            {
+                SaveMaster.WipeData(saveable);
+                instanceManager.DestroyObject(saveable);
+            }
         }
     }
 }

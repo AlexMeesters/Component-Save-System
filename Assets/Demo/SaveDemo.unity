@@ -2796,11 +2796,11 @@ GameObject:
   m_Component:
   - component: {fileID: 1141590176}
   - component: {fileID: 1141590178}
-  - component: {fileID: 1141590175}
   - component: {fileID: 1141590173}
+  - component: {fileID: 1141590177}
+  - component: {fileID: 1141590175}
   - component: {fileID: 1141590172}
   - component: {fileID: 1141590174}
-  - component: {fileID: 1141590177}
   m_Layer: 0
   m_Name: Demo Character
   m_TagString: Player

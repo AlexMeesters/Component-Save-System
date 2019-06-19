@@ -41,7 +41,7 @@ namespace Lowscope.Saving.Demo.Character
 
                 saveSlotButtons[i].Button.onClick.AddListener(() =>
                 {
-                    SaveMaster.LoadSlot(index);
+                    SaveMaster.LoadSlot(index, this.gameObject.scene.name);
                 });
             }
 
@@ -93,7 +93,7 @@ namespace Lowscope.Saving.Demo.Character
 
         private void OnLoad()
         {
-            SaveMaster.LoadSlot(SaveMaster.GetActiveSlot());
+            SaveMaster.LoadSlot(SaveMaster.GetActiveSlot(), this.gameObject.scene.name);
         }
 
         private void OnSave()
@@ -109,7 +109,7 @@ namespace Lowscope.Saving.Demo.Character
         {
             int slot = SaveMaster.GetActiveSlot();
             SaveMaster.DeleteActiveSaveGame();
-            SaveMaster.LoadSlot(slot);
+            SaveMaster.LoadSlot(slot, this.gameObject.scene.name);
         }
 
         private void OnChangeCharacterSprite(float value)

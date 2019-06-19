@@ -1,8 +1,8 @@
+using UnityEngine;
 using System.Collections.Generic;
-using Lowscope.Saving;
 using Lowscope.Saving.Components;
 using Lowscope.Saving.Enums;
-using UnityEngine;
+using Lowscope.Saving.Data;
 
 namespace Lowscope.Saving.Core
 {
@@ -48,6 +48,8 @@ namespace Lowscope.Saving.Core
         {
             GameObject getResource = null;
 
+            // Implement more spawn methods here.
+            // Such as usage for Asset Bundles & Adressables
             switch (source)
             {
                 case InstanceSource.Resources:
@@ -61,7 +63,7 @@ namespace Lowscope.Saving.Core
 
             if (getResource == null)
             {
-                Debug.LogWarning("Invalid resource path");
+                Debug.LogWarning(string.Format("Invalid resource path: {0}", filePath));
                 return null;
             }
 
@@ -80,7 +82,7 @@ namespace Lowscope.Saving.Core
             if (saveable == null)
             {
                 Debug.LogWarning("Save Instance Manager: No saveable added to spawned object." +
-                                 " Scanning for ISaveables during runtime is more costly.");
+                    " Scanning for ISaveables during runtime is more costly.");
                 saveable = instance.AddComponent<Saveable>();
                 saveable.ScanAddSaveableComponents();
             }
@@ -135,19 +137,11 @@ namespace Lowscope.Saving.Core
                 i++;
             }
 
-            return JsonUtility.ToJson(data);
+            return JsonUtility.ToJson(data, SaveSettings.Get().useJsonPrettyPrint );
         }
 
         public void OnLoad(string data)
         {
-            //if (isLoaded)
-            //{
-            //    Debug.LogWarning("Attempted to load instance manager twice");
-            //    return;
-            //}
-
-            //spawnInfo.Clear();
-
             SaveData saveData = JsonUtility.FromJson<SaveData>(data);
 
             if (saveData != null && saveData.infoCollection != null)

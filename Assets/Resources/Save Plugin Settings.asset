@@ -14,21 +14,22 @@ MonoBehaviour:
   fileExtensionName: .savegame
   fileFolderName: SaveData
   fileName: Slot
+  useJsonPrettyPrint: 0
   maxSaveSlotCount: 300
   trackTimePlayed: 1
   autoSave: 1
   autoSaveOnSlotSwitch: 1
   loadDefaultSlotOnStart: 1
   defaultSlot: 0
-  defaultStartScene: 
+  defaultStartScene: TestScene
   startingAdditionalScenes: []
-  allowOpenSlotMenu: 1
+  useHotkeys: 1
   openSlotMenuKey: 282
-  allowSaveGameKey: 1
   saveGameKey: 283
-  allowLoadGameKey: 1
   loadGameKey: 284
+  syncSaveGameKey: 285
+  syncLoadGameKey: 286
+  useSlotMenu: 1
   openSlotMenuPrefab: {fileID: 1243618381881642, guid: 205d429e045b1984291f6bc98bb28c65,
     type: 2}
   showSaveFileUtilityLog: 0
-  dontWriteSaveFiles: 0

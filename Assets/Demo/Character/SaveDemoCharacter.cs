@@ -48,12 +48,6 @@ namespace Lowscope.Saving.Demo.Character
         {
             if (!hasJumped)
                 hasJumped = Input.GetKeyDown(KeyCode.Space);
-
-            if (Input.GetKeyDown(KeyCode.Q))
-            {
-                UnityEngine.SceneManagement.SceneManager.CreateScene("fu");
-                UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync(gameObject.scene.name);
-            }
         }
 
         void FixedUpdate()

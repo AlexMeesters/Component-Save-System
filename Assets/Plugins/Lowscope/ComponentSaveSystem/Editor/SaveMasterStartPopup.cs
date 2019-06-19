@@ -2,7 +2,7 @@
 using Lowscope.Saving.Data;
 using UnityEditor;
 
-namespace Lowscope.SaveMaster.Editor
+namespace Lowscope.SaveMaster.EditorTools
 {
     [InitializeOnLoad]
     public class SaveMasterStartPopup

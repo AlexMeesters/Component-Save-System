@@ -19,7 +19,6 @@ namespace Lowscope.Saving.Data
             public string creationDate;
             public string timePlayed;
             public string lastActiveScene;
-            public List<string> lastAdditiveScenes;
         }
 
         [Serializable]
@@ -33,7 +32,6 @@ namespace Lowscope.Saving.Data
         [NonSerialized] public int gameVersion;
         [NonSerialized] public DateTime creationDate;
         [NonSerialized] public string lastActiveScene;
-        [NonSerialized] public List<string> lastAdditiveScenes;
 
         [SerializeField] private MetaData metaData;
         [SerializeField] private List<Data> saveData = new List<Data>();
@@ -59,19 +57,6 @@ namespace Lowscope.Saving.Data
             metaData.lastActiveScene = lastActiveScene;
 
             int sceneCount = SceneManager.sceneCount;
-            metaData.lastAdditiveScenes = new List<string>();
-
-            for (int i = 0; i < sceneCount; i++)
-            {
-                string scene = SceneManager.GetSceneAt(i).name;
-
-                if (scene != lastActiveScene && scene != "-")
-                {
-                    metaData.lastAdditiveScenes.Add(scene);
-                }
-            }
-
-            this.lastAdditiveScenes = metaData.lastAdditiveScenes;
         }
 
         public void OnLoad()
@@ -82,7 +67,6 @@ namespace Lowscope.Saving.Data
             TimeSpan.TryParse(metaData.timePlayed, out timePlayed);
 
             lastActiveScene = metaData.lastActiveScene;
-            lastAdditiveScenes = metaData.lastAdditiveScenes;
 
             if (saveData.Count > 0)
             {

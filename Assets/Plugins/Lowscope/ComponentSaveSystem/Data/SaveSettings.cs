@@ -108,6 +108,7 @@ namespace Lowscope.Saving.Data
         public string fileExtensionName = ".savegame";
         public string fileFolderName = "SaveData";
         public string fileName = "Slot";
+        public bool useJsonPrettyPrint = true;
 
         [Header("Configuration")]
         [Range(1, 300)]
@@ -124,19 +125,19 @@ namespace Lowscope.Saving.Data
         [Range(0, 299)]
         public int defaultSlot = 0;
         public string defaultStartScene = "";
-        public List<string> startingAdditionalScenes = null;
 
         [Header("Extras")]
-        public bool allowOpenSlotMenu = true;
+        public bool useHotkeys = true;
         public KeyCode openSlotMenuKey = KeyCode.F1;
-        public bool allowSaveGameKey = true;
         public KeyCode saveGameKey = KeyCode.F2;
-        public bool allowLoadGameKey = true;
         public KeyCode loadGameKey = KeyCode.F3;
+        public KeyCode syncSaveGameKey = KeyCode.F4;
+        public KeyCode syncLoadGameKey = KeyCode.F5;
+
+        public bool useSlotMenu = true;
         public GameObject openSlotMenuPrefab = null;
 
         [Header("Debug (Unity Editor Only)")]
         public bool showSaveFileUtilityLog;
-        public bool dontWriteSaveFiles;
     }
 }

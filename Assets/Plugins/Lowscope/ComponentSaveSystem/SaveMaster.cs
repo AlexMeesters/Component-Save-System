@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Lowscope.Saving.Components;
+using Lowscope.Saving.Core;
 using Lowscope.Saving.Data;
 using Lowscope.Saving.Enums;
 using UnityEngine;
@@ -45,11 +46,11 @@ namespace Lowscope.Saving
             GameObject.DontDestroyOnLoad(saveMasterObject);
         }
 
-     /*  
-     *  Instance managers exist to keep track of spawned objects.
-     *  These managers make it possible to drop a coin, and when you reload the game
-     *  the coin will still be there.
-     */
+        /*  
+        *  Instance managers exist to keep track of spawned objects.
+        *  These managers make it possible to drop a coin, and when you reload the game
+        *  the coin will still be there.
+        */
 
         private static void OnSceneUnloaded(Scene scene)
         {
@@ -165,8 +166,10 @@ namespace Lowscope.Saving
         /// Current scene also gets saved, if any slot is currently set.
         /// If slot is empty, it will still set it, and load the default set starting scene.
         /// </summary>
-        /// <param name="slot"></param>
-        public static bool LoadSlot(int slot)
+        /// <param name="slot"> Save slot to load, it will create a new one if empty </param>
+        /// <param name="defaultScene"> Scene to load in case the save is empty </param>
+        /// <param name="defaultScene"> Additional scenes to load in case the save is empty </param>
+        public static bool LoadSlot(int slot, string defaultScene = "")
         {
             // Ensure the current game is saved, and write it to disk, if that is wanted behaviour.
             if (SaveSettings.Get().autoSave && SaveSettings.Get().autoSaveOnSlotSwitch && activeSaveGame != null)
@@ -176,7 +179,10 @@ namespace Lowscope.Saving
 
             bool slotExists = SaveFileUtility.IsSlotUsed(slot);
 
-            if (!slotExists && string.IsNullOrEmpty(SaveSettings.Get().defaultStartScene))
+            string startScene = string.IsNullOrEmpty(defaultScene) ? SaveSettings.Get().defaultStartScene : defaultScene;
+
+            // Default can also still be empty.
+            if (!slotExists && string.IsNullOrEmpty(startScene))
             {
                 SaveMaster.SetSlot(slot, false);
                 //Debug.Log("Slot is empty: Please set a default starting scene.");
@@ -185,8 +191,7 @@ namespace Lowscope.Saving
 
             SaveGame save = SaveFileUtility.LoadSave(slot, true);
 
-            var activeScene = !slotExists ? SaveSettings.Get().defaultStartScene : save.lastActiveScene;
-            var additiveScene = !slotExists ? SaveSettings.Get().startingAdditionalScenes : save.lastAdditiveScenes;
+            var activeScene = !slotExists ? startScene : save.lastActiveScene;
 
             if (SceneUtility.GetBuildIndexByScenePath(activeScene) == -1)
             {
@@ -195,11 +200,15 @@ namespace Lowscope.Saving
                 return false;
             }
 
-            instance.StartCoroutine(LoadSlotCoroutine(slot, activeScene, additiveScene));
+            instance.StartCoroutine(LoadSlotCoroutine(slot, activeScene, save));
             return true;
         }
 
-        private static IEnumerator LoadSlotCoroutine(int slot, string activeScene, List<string> additionalScenes)
+        // Coroutine is used to properly unload other scenes before switching saves.
+        // This ensures the previous SaveGame has all data written. Since ISaveable components
+        // Write to the SaveGame upon Destruction. Afterwards when the slot changes, and autosave is toggled on it 
+        // will write that SaveGame to the disk.
+        private static IEnumerator LoadSlotCoroutine(int slot, string activeScene, SaveGame saveGame)
         {
             // Get all scenes to unload
             Scene[] scenesToUnload = new Scene[SceneManager.sceneCount];
@@ -242,7 +251,7 @@ namespace Lowscope.Saving
 
             yield return null;
 
-            SaveMaster.SetSlot(slot, false);
+            SaveMaster.SetSlot(slot, false, saveGame);
 
             yield return null;
 
@@ -259,7 +268,7 @@ namespace Lowscope.Saving
         /// </summary>
         /// <param name="slot"> Target save slot </param>
         /// <param name="notifyListeners"> Send a message to all saveables to load the new save file </param>
-        public static void SetSlot(int slot, bool notifyListeners)
+        public static void SetSlot(int slot, bool notifyListeners, SaveGame saveGame = null)
         {
             if (slot < 0 || slot > SaveSettings.Get().maxSaveSlotCount)
             {
@@ -267,15 +276,8 @@ namespace Lowscope.Saving
                 return;
             }
 
-            //// In case you are going from one save to another, we ensure the current one gets written.
-            //if (activeSaveGame != null)
-            //{
-            //    Save();
-            //    SaveFileUtility.WriteSave(activeSaveGame, slot);
-            //}
-
             activeSlot = slot;
-            activeSaveGame = SaveFileUtility.LoadSave(slot, true);
+            activeSaveGame = (saveGame == null) ? SaveFileUtility.LoadSave(slot, true) : saveGame;
 
             if (notifyListeners)
             {
@@ -287,6 +289,11 @@ namespace Lowscope.Saving
 
         public static DateTime GetSaveCreationTime(int slot)
         {
+            if (slot == activeSlot)
+            {
+                return activeSaveGame.creationDate;
+            }
+
             if (!IsSlotUsed(slot))
             {
                 return new DateTime();
@@ -297,6 +304,11 @@ namespace Lowscope.Saving
 
         public static TimeSpan GetSaveTimePlayed(int slot)
         {
+            if (slot == activeSlot)
+            {
+                return activeSaveGame.timePlayed;
+            }
+
             if (!IsSlotUsed(slot))
             {
                 return new TimeSpan();
@@ -307,6 +319,11 @@ namespace Lowscope.Saving
 
         public static int GetSaveVersion(int slot)
         {
+            if (slot == activeSlot)
+            {
+                return activeSaveGame.gameVersion;
+            }
+
             if (!IsSlotUsed(slot))
             {
                 return -1;
@@ -322,6 +339,11 @@ namespace Lowscope.Saving
 
         private static SaveGame GetSave(int slot, bool createIfEmpty = true)
         {
+            if (slot == activeSlot)
+            {
+                return activeSaveGame;
+            }
+
             return SaveFileUtility.LoadSave(slot, createIfEmpty);
         }
 
@@ -392,6 +414,7 @@ namespace Lowscope.Saving
             {
                 activeSlot = -1;
                 activeSaveGame = null;
+                saveables.Clear();
             }
         }
 
@@ -403,6 +426,7 @@ namespace Lowscope.Saving
             SaveFileUtility.DeleteSave(activeSlot);
             activeSlot = -1;
             activeSaveGame = null;
+            saveables.Clear();
         }
 
         /// <summary>
@@ -445,7 +469,7 @@ namespace Lowscope.Saving
         /// <summary>
         /// Sends request to all saveables to load data from the active save game
         /// </summary>
-        private static void SyncLoad()
+        public static void SyncLoad()
         {
             if (activeSaveGame == null)
             {
@@ -624,7 +648,7 @@ namespace Lowscope.Saving
                 StartCoroutine(IncrementTimePlayed());
             }
 
-            if (settings.allowOpenSlotMenu || settings.allowLoadGameKey || settings.allowSaveGameKey)
+            if (settings.useSlotMenu || settings.useHotkeys)
             {
                 StartCoroutine(TrackOpenSlotMenu());
             }
@@ -639,7 +663,7 @@ namespace Lowscope.Saving
             {
                 yield return null;
 
-                if (settings.allowOpenSlotMenu && Input.GetKeyDown(settings.openSlotMenuKey))
+                if (settings.useSlotMenu && Input.GetKeyDown(settings.openSlotMenuKey))
                 {
                     if (instance == null)
                     {
@@ -651,18 +675,54 @@ namespace Lowscope.Saving
                     }
                 }
 
-                if (settings.allowSaveGameKey && Input.GetKeyDown(settings.saveGameKey))
+                if (!settings.useHotkeys)
                 {
-                    Debug.Log("Written save to disk!");
+                    continue;
+                }
+
+                if (Input.GetKeyDown(settings.saveGameKey))
+                {
+                    var stopWatch = new System.Diagnostics.Stopwatch();
+                    stopWatch.Start();
+
                     WriteActiveSaveToDisk();
+
+                    stopWatch.Stop();
+                    Debug.Log(string.Format("Synced objects & Witten game to disk. MS: {0}", stopWatch.ElapsedMilliseconds.ToString()));
                 }
 
-                if (settings.allowLoadGameKey && Input.GetKeyDown(settings.loadGameKey))
+                if (Input.GetKeyDown(settings.loadGameKey))
                 {
-                    Debug.Log("Loaded game from disk!");
+                    var stopWatch = new System.Diagnostics.Stopwatch();
+                    stopWatch.Start();
+
                     LoadSlot(activeSlot);
+
+                    stopWatch.Stop();
+                    Debug.Log(string.Format("Synced objects & Loaded game from disk. MS: {0}", stopWatch.ElapsedMilliseconds.ToString()));
                 }
 
+                if (Input.GetKeyDown(settings.syncSaveGameKey))
+                {
+                    var stopWatch = new System.Diagnostics.Stopwatch();
+                    stopWatch.Start();
+
+                    SyncSave();
+
+                    stopWatch.Stop();
+                    Debug.Log(string.Format("Synced (Save) objects. MS: {0}", stopWatch.ElapsedMilliseconds.ToString()));
+                }
+
+                if (Input.GetKeyDown(settings.syncLoadGameKey))
+                {
+                    var stopWatch = new System.Diagnostics.Stopwatch();
+                    stopWatch.Start();
+
+                    SyncLoad();
+
+                    stopWatch.Stop();
+                    Debug.Log(string.Format("Synced (Load) objects. MS: {0}", stopWatch.ElapsedMilliseconds.ToString()));
+                }
             }
         }
 

@@ -1,13 +1,51 @@
+using UnityEngine;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Lowscope.Saving.Data;
-using UnityEngine;
 
 namespace Lowscope.Saving.Core
 {
     public class SaveFileUtility
     {
+#if UNITY_EDITOR
+
+        [UnityEditor.MenuItem(itemName: "Saving/Open Save Location")]
+        public static void OpenSaveLocation()
+        {
+#if UNITY_EDITOR_WIN
+            string path = Application.persistentDataPath;
+
+            path = path.Replace(@"/", @"\");   // explorer doesn't like front slashes
+            System.Diagnostics.Process.Start("explorer.exe", "/select," + path);
+
+#elif UNITY_EDITOR_OSX
+
+        string macPath = path.Replace("\\", "/"); // mac finder doesn't like backward slashes
+        bool openInsidesOfFolder = false;
+
+		if ( System.IO.Directory.Exists(macPath) ) // if path requested is a folder, automatically open insides of that folder
+		{
+			openInsidesOfFolder = true;
+		}
+ 
+		if ( !macPath.StartsWith("\"") )
+		{
+			macPath = "\"" + macPath;
+		}
+ 
+		if ( !macPath.EndsWith("\"") )
+		{
+			macPath = macPath + "\"";
+		}
+
+        string arguments = (openInsidesOfFolder ? "" : "-R ") + macPath;
+        System.Diagnostics.Process.Start("open", arguments);
+#endif
+        }
+
+#endif
+
         // Saving with WebGL requires a seperate DLL, which is included in the plugin.
 #if UNITY_WEBGL
     [DllImport("__Internal")]
@@ -17,7 +55,7 @@ namespace Lowscope.Saving.Core
     private static extern void WindowAlert(string message);
 #endif
 
-        private static string FileExtensionName { get { return SaveSettings.Get().fileExtensionName; } }
+        private static string fileExtentionName { get { return SaveSettings.Get().fileExtensionName; } }
         private static string gameFileName { get { return SaveSettings.Get().fileName; } }
 
         private static bool debugMode { get { return SaveSettings.Get().showSaveFileUtilityLog; } }
@@ -32,7 +70,6 @@ namespace Lowscope.Saving.Core
             }
         }
 
-#if UNITY_EDITOR
         private static void Log(string text)
         {
             if (debugMode)
@@ -40,17 +77,19 @@ namespace Lowscope.Saving.Core
                 Debug.Log(text);
             }
         }
-#endif
 
-        private static Dictionary<int, SaveGame> cachedSaveGames;
+        private static Dictionary<int, string> cachedSavePaths;
 
-        public static Dictionary<int, SaveGame> ObtainAllSaveGames()
+        public static Dictionary<int, string> ObtainSavePaths()
         {
-            if (cachedSaveGames != null)
+            if (cachedSavePaths != null)
             {
-                return cachedSaveGames;
+                return cachedSavePaths;
             }
 
+            Dictionary<int, string> newSavePaths = new Dictionary<int, string>();
+
+            // Create a directory if it doesn't exist yet
             if (!Directory.Exists(DataPath))
             {
                 Directory.CreateDirectory(DataPath);
@@ -58,70 +97,66 @@ namespace Lowscope.Saving.Core
 
             string[] filePaths = Directory.GetFiles(DataPath);
 
-            string[] savePaths = filePaths.Where(path => path.EndsWith(FileExtensionName)).ToArray();
+            string[] savePaths = filePaths.Where(path => path.EndsWith(fileExtentionName)).ToArray();
 
-            Dictionary<int, SaveGame> gameSaves = new Dictionary<int, SaveGame>();
+            int pathCount = savePaths.Length;
 
-            for (int i = 0; i < savePaths.Length; i++)
+            for (int i = 0; i < pathCount; i++)
             {
-#if UNITY_EDITOR
-                Log(string.Format("Found save at: {0}", savePaths[i]));
-#endif
+                Log(string.Format("Found save file at: {0}", savePaths[i]));
 
-                using (var reader = new BinaryReader(File.Open(savePaths[i], FileMode.Open)))
+                int getSlotNumber;
+
+                string fileName = savePaths[i].Substring(DataPath.Length + gameFileName.Length + 1);
+
+                if (int.TryParse(fileName.Substring(0, fileName.LastIndexOf(".")), out getSlotNumber))
                 {
-                    string dataString = reader.ReadString();
-
-                    if (!string.IsNullOrEmpty(dataString))
-                    {
-                        LoadSaveFromPath(savePaths[i], ref gameSaves, dataString);
-                    }
-                    else
-                    {
-#if UNITY_EDITOR
-                        Log(string.Format("Save file empty: {0}", savePaths[i]));
-#endif
-                    }
+                    newSavePaths.Add(getSlotNumber, savePaths[i]);
                 }
             }
 
-            cachedSaveGames = gameSaves;
+            cachedSavePaths = newSavePaths;
 
-            return gameSaves;
+            return newSavePaths;
         }
 
-        private static void LoadSaveFromPath(string savePath, ref Dictionary<int, SaveGame> gameSaves, string dataString)
+        private static SaveGame LoadSaveFromPath(string savePath)
         {
-            SaveGame getSave = JsonUtility.FromJson<SaveGame>(dataString);
+            string data = "";
+
+            using (var reader = new BinaryReader(File.Open(savePath, FileMode.Open)))
+            {
+                data = reader.ReadString();
+            }
+
+            if (string.IsNullOrEmpty(data))
+            {
+                Log(string.Format("Save file empty: {0}. It will be automatically removed", savePath));
+                File.Delete(savePath);
+                return null;
+            }
+
+            SaveGame getSave = JsonUtility.FromJson<SaveGame>(data);
 
             if (getSave != null)
             {
                 getSave.OnLoad();
-
-                int getSlotNumber;
-
-                string fileName = savePath.Substring(DataPath.Length + gameFileName.Length + 1);
-
-                if (int.TryParse(fileName.Substring(0, fileName.LastIndexOf(".")), out getSlotNumber))
-                {
-                    gameSaves.Add(getSlotNumber, getSave);
-                }
+                return getSave;
             }
             else
             {
-#if UNITY_EDITOR
                 Log(string.Format("Save file corrupted: {0}", savePath));
-#endif
+                return null;
             }
         }
 
         public static int[] GetUsedSlots()
         {
-            int[] saves = new int[ObtainAllSaveGames().Count];
+            int[] saves = new int[ObtainSavePaths().Count];
 
             int counter = 0;
 
-            foreach (int item in ObtainAllSaveGames().Keys)
+            foreach (int item in ObtainSavePaths().Keys)
             {
                 saves[counter] = item;
                 counter++;
@@ -132,7 +167,7 @@ namespace Lowscope.Saving.Core
 
         public static int GetSaveSlotCount()
         {
-            return ObtainAllSaveGames().Count;
+            return ObtainSavePaths().Count;
         }
 
         public static SaveGame LoadSave(int slot, bool createIfEmpty = false)
@@ -147,29 +182,31 @@ namespace Lowscope.Saving.Core
                 SyncFiles();
 #endif
 
-            SaveGame getSave;
+            string savePath = "";
 
-            if (SaveFileUtility.ObtainAllSaveGames().TryGetValue(slot, out getSave))
+            if (SaveFileUtility.ObtainSavePaths().TryGetValue(slot, out savePath))
             {
-#if UNITY_EDITOR
+                SaveGame saveGame = LoadSaveFromPath(savePath);
+
+                if (saveGame == null)
+                {
+                    cachedSavePaths.Remove(slot);
+                    return null;
+                }
+
                 Log(string.Format("Succesful load at slot (from cache): {0}", slot));
-#endif
-                return getSave;
+                return saveGame;
             }
             else
             {
                 if (!createIfEmpty)
                 {
-#if UNITY_EDITOR
                     Log(string.Format("Could not load game at slot {0}", slot));
-#endif
                 }
                 else
                 {
 
-#if UNITY_EDITOR
                     Log(string.Format("Creating save at slot {0}", slot));
-#endif
 
                     SaveGame saveGame = new SaveGame();
 
@@ -184,72 +221,46 @@ namespace Lowscope.Saving.Core
 
         public static void WriteSave(SaveGame saveGame, int saveSlot)
         {
-#if UNITY_EDITOR
-            if (SaveSettings.Get().dontWriteSaveFiles)
-            {
-                return;
-            }
-#endif
+            string savePath = string.Format("{0}/{1}{2}{3}", DataPath, gameFileName, saveSlot.ToString(), fileExtentionName);
 
-            if (cachedSaveGames == null)
+            if (!cachedSavePaths.ContainsKey(saveSlot))
             {
-                cachedSaveGames = new Dictionary<int, SaveGame>();
+                cachedSavePaths.Add(saveSlot, savePath);
             }
 
-            if (!cachedSaveGames.ContainsKey(saveSlot))
-            {
-                cachedSaveGames.Add(saveSlot, saveGame);
-            }
-
-            string savePath = string.Format("{0}/{1}{2}{3}", DataPath, gameFileName, saveSlot.ToString(), FileExtensionName);
-
-#if UNITY_EDITOR
             Log(string.Format("Saving game slot {0} to : {1}", saveSlot.ToString(), savePath));
-#endif
+
             saveGame.OnWrite();
 
             using (var writer = new BinaryWriter(File.Open(savePath, FileMode.Create)))
             {
-                writer.Write(JsonUtility.ToJson(saveGame));
+                var jsonString = JsonUtility.ToJson(saveGame, SaveSettings.Get().useJsonPrettyPrint);
+
+                writer.Write(jsonString);
             }
 
 #if UNITY_WEBGL && !UNITY_EDITOR
         SyncFiles();
 #endif
-
-        }
-
-        public static void DeleteSave(SaveGame saveGame)
-        {
-            int? removeIndex = ObtainAllSaveGames().FirstOrDefault(save => save.Value == saveGame).Key;
-
-            if (removeIndex.HasValue)
-            {
-                DeleteSave(removeIndex.Value);
-            }
         }
 
         public static void DeleteSave(int slot)
         {
-            string filePath = string.Format("{0}/{1}{2}{3}", DataPath, gameFileName, slot, FileExtensionName);
+            string filePath = string.Format("{0}/{1}{2}{3}", DataPath, gameFileName, slot, fileExtentionName);
 
             if (File.Exists(filePath))
             {
-#if UNITY_EDITOR
                 Log(string.Format("Succesfully removed file at {0}", filePath));
-#endif
                 File.Delete(filePath);
 
-                if (cachedSaveGames.ContainsKey(slot))
+                if (cachedSavePaths.ContainsKey(slot))
                 {
-                    cachedSaveGames.Remove(slot);
+                    cachedSavePaths.Remove(slot);
                 }
             }
             else
             {
-#if UNITY_EDITOR
                 Log(string.Format("Failed to remove file at {0}", filePath));
-#endif
             }
 
 #if UNITY_WEBGL && !UNITY_EDITOR
@@ -259,7 +270,7 @@ namespace Lowscope.Saving.Core
 
         public static bool IsSlotUsed(int index)
         {
-            return ObtainAllSaveGames().ContainsKey(index);
+            return ObtainSavePaths().ContainsKey(index);
         }
 
         public static int GetAvailableSaveSlot()
@@ -268,7 +279,7 @@ namespace Lowscope.Saving.Core
 
             for (int i = 0; i < slotCount; i++)
             {
-                if (!ObtainAllSaveGames().ContainsKey(i))
+                if (!ObtainSavePaths().ContainsKey(i))
                 {
                     return i;
                 }

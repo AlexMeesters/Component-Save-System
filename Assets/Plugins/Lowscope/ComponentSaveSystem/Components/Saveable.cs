@@ -58,9 +58,8 @@ namespace Lowscope.Saving.Components
 
 #if UNITY_EDITOR
 
-        private Dictionary<string, Saveable> saveIdentificationCache = new Dictionary<string, Saveable>();
+        private static Dictionary<string, Saveable> saveIdentificationCache = new Dictionary<string, Saveable>();
 
-        private string identification;
         private static string identificationData;
         private static string lastSelectedGUID;
 
@@ -95,9 +94,16 @@ namespace Lowscope.Saving.Components
                     {
                         saveIdentificationCache.Add(saveIdentification, this);
                     }
+                    else
+                    {
+                        if (saveable != this)
+                        {
+                            saveIdentification = "";
+                        }
+                    }
                 }
 
-                if (string.IsNullOrEmpty(saveIdentification) || (isDuplicate && saveable != this))
+                if (string.IsNullOrEmpty(saveIdentification))
                 {
 #if NET_4_6
                     saveIdentification = $"{gameObject.scene.name}-{gameObject.name}-{System.Guid.NewGuid().ToString().Substring(0, 5)}";
@@ -248,6 +254,7 @@ namespace Lowscope.Saving.Components
 
 #if UNITY_EDITOR
             Lowscope.Tools.ValidateHierarchy.Remove(this);
+            saveIdentificationCache.Remove(saveIdentification);
 #endif
         }
 
@@ -309,7 +316,7 @@ namespace Lowscope.Saving.Components
             if (hasSaved)
             {
                 // The collection will be passed into the savegame using the identification that has been assigned to this component.
-                saveGame.Set(saveIdentification, JsonUtility.ToJson(iSaveableData));
+                saveGame.Set(saveIdentification, JsonUtility.ToJson(iSaveableData, SaveSettings.Get().useJsonPrettyPrint));
             }
         }
 
