@@ -91,9 +91,9 @@ Also take note of the hotkeys and use slot menu in the extras tab.
 
 In case you want full control through just C# I reccomend turning all the autosaving off.
 The SaveMaster gets instantiated before any scene loads using RunTimeInitializeOnLoad()
-Meaning you can directly use the system. The methods below are most important. 
-It is reccomended to see what else is available.
+Meaning you can directly use the system. 
 
+### Some of the main method the SaveMaster uses
 ```csharp
 // Returns the active slot. -1 means no slot is loaded
 SaveMaster.GetActiveSlot() 
