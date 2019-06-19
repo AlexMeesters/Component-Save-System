@@ -89,6 +89,45 @@ This is useful if you don't plan on using any other save slots, and you just wan
 
 Also take note of the hotkeys and use slot menu in the extras tab. 
 
+In case you want full control through just C# I reccomend turning all the autosaving off.
+The SaveMaster gets instantiated before any scene loads using RunTimeInitializeOnLoad()
+Meaning you can directly use the system. The methods below are most important. 
+It is reccomended to see what else is available.
+
+```
+// Returns the active slot. -1 means no slot is loaded
+SaveMaster.GetActiveSlot() 
+
+// Tries to set the current slot to the last used one.
+SaveMaster.SetSlotToLastUsedSlot(bool syncListeners) 
+
+// Tries to load the last used slot
+SaveMaster.LoadLastUsedSlot()
+
+// Attempts to set the slot to the first unused slot. Useful for creating a new game.
+SaveMaster.SetSlotToFirstUnused(bool syncListenersout int slot)
+
+// Will load the last used scene for save game, and set the slot. 
+// Current scene also gets saved, if any slot is currently set. (And if AutoSaveOnSlotSwitch is on)
+// If slot is empty, it will still set it, and load the default set starting scene.
+SaveMaster.LoadSlot(int slot, string defaultScene = "")
+
+// Set the active save slot
+SaveMaster.SetSlot(int slot, bool syncListeners)
+
+// Attempts to get a SaveGame, purely for the data.
+SaveMaster.GetSave(int slot, bool createIfEmpty = true)
+
+//Removes the active save file. Based on the save slot index.
+SaveMaster.DeleteActiveSaveGame()
+
+// Sends notification to all subscribed Saveables to save to the SaveGame
+Savemaster.SyncSave()
+
+// Sends notification to all subscribed Saveables to load from the SaveGame
+Savemaster.LoadSave()
+```
+
 ## Performance tests (I7 8700K and SSD)
 
 Keep in mind that in normal circumstances, you would not sync 4000 components at a time, unless you do it explicitly.
