@@ -75,9 +75,9 @@ public class ExampleScript : MonoBehaviour, ISaveable
 
 ## Performance tests (I7 8700K and SSD)
 
-Keep in mind that in normal circumstances, you would not sync 1000 objects at a time, unless you do it explicitly.
-This is because objects get written to the SaveGame class when they are destroyed. And eventually this SaveGame is written to Disk
-upon game exit/pause, slot switch or savepoint. This depends on the plugin configuration you choose to have.
+Keep in mind that in normal circumstances, you would not sync 4000 components at a time, unless you do it explicitly.
+This is because all components that implement ISaveable get written to the SaveGame class when the GameObject gets destroyed. 
+And eventually this SaveGame is written to Disk upon game exit/pause, slot switch or savepoint. This depends on the plugin configuration you choose to have.
 
 Each object contains 4 saveable components:
 * Save Position
