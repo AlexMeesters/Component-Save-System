@@ -88,7 +88,7 @@ Each object contains 4 saveable components:
 ### Test with 1000 unique objects (Non-Random positions, scale and rotations)
 
 - 1000 Object Sync & Write to disk : ~18 Milliseconds
-- 1000 Object Sync & Load to disk: ~26 Milliseconds
+- 1000 Object Sync & Load from disk: ~26 Milliseconds
 - 1000 Object Sync Save: ~9 Milliseconds
 - 1000 Object Sync Load: ~15 Milliseconds
 
@@ -98,7 +98,7 @@ Each object contains 4 saveable components:
 ### Test with 1000 unique objects (Randomized positions, scale and rotations)
 
 - 1000 Object Sync & Write to disk : ~26 Milliseconds
-- 1000 Object Sync & Load to disk: ~38 Milliseconds
+- 1000 Object Sync & Load from disk: ~38 Milliseconds
 - 1000 Object Sync Save: ~12 Milliseconds
 - 1000 Object Sync Load: ~21 Milliseconds
 
