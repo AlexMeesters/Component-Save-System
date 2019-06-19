@@ -10,8 +10,6 @@ This is useful in case you want to be able to easily save the state of multiple 
 
 ## How does it work?
 
-![Save architectue](https://github.com/AlexMeesters/ComponentSaveSystem/blob/master/Images/savearchitecture.jpg)
-
 Image of the "Saveable" component. 
 A component that fetches all components that implement ISaveable.
 
@@ -62,3 +60,8 @@ public class ExampleScript : MonoBehaviour, ISaveable
     }
 }
 ```
+
+## Architecture of the system
+
+![Save architectue](https://github.com/AlexMeesters/ComponentSaveSystem/blob/master/Images/savearchitecture.jpg)
+
