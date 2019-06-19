@@ -75,9 +75,12 @@ public class ExampleScript : MonoBehaviour, ISaveable
 
 ## How to use
 
-When the plugin is imported, you can configure it by going to Saving/Open Save Settings
+When the plugin is imported, you can configure it by going to Saving/Open Save Settings in the top menu of Unity.
 
-![Save example image](https://github.com/AlexMeesters/Component-Save-System/blob/master/Images/pluginsettings.PNG?raw=true)
+<p align="center"> 
+<img src="https://github.com/AlexMeesters/Component-Save-System/blob/master/Images/pluginsettings.PNG">
+</p>
+
 
 ## Performance tests (I7 8700K and SSD)
 
