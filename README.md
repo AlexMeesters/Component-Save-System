@@ -12,6 +12,10 @@ This is useful in case you want to be able to easily save the state of multiple 
 
 ## How does it work?
 
+![Save architectue](https://github.com/AlexMeesters/ComponentSaveSystem/blob/master/Images/savearchitecture.jpg)
+
+## How does it work in practice?
+
 Image of the "Saveable" component. 
 A component that fetches all components that implement ISaveable.
 
@@ -66,9 +70,4 @@ public class ExampleScript : MonoBehaviour, ISaveable
 ß{"metaData":{"gameVersion":0,"creationDate":"6/19/2019 2:16:52 AM","timePlayed":"00:00:02","lastActiveScene":"TestScene","lastAdditiveScenes":[]},"saveData":[{"guid":"TestScene-GameObject-d5f95","data":"{\"saveStructures\":[{\"identifier\":\"ExampleScript 915ce\",\"data\":\"{\\\"Name\\\":\\\"Test\\\",\\\"Experience\\\":25,\\\"Health\\\":25}\"}]}"}]}
 
 ```
-
-
-## Architecture of the system
-
-![Save architectue](https://github.com/AlexMeesters/ComponentSaveSystem/blob/master/Images/savearchitecture.jpg)
 
