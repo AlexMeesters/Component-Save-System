@@ -81,6 +81,13 @@ When the plugin is imported, you can configure it by going to Saving/Open Save S
 <img src="https://github.com/AlexMeesters/Component-Save-System/blob/master/Images/pluginsettings.PNG">
 </p>
 
+The most important settings during setup are:
+* Auto Save - Automatically writes current SaveGame to file upon ApplicationExit/Pause
+* Auto Save On Slot Switch - Automatically writes current SaveGame upon switching save slot
+* Load Default slot on start - Once startup, the component will automatically load the designated slot.
+This is useful if you don't plan on using any other save slots, and you just want to have your game saved.
+
+Also take note of the hotkeys and use slot menu in the extras tab. 
 
 ## Performance tests (I7 8700K and SSD)
 
