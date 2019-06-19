@@ -13,13 +13,10 @@ This is useful in case you want to be able to easily save the state of multiple 
 Image of the "Saveable" component. 
 A component that fetches all components that implement ISaveable.
 
-![Image of the saveable component](https://github.com/AlexMeesters/ComponentSaveSystem/blob/master/Images/Component-Clean.PNG)
-
+![Image of the saveable component](https://github.com/AlexMeesters/ComponentSaveSystem/blob/master/Images/Component-AddedSampleComponents.PNG)
 
 Example with [all pre-made components](https://github.com/AlexMeesters/ComponentSaveSystem/tree/master/Assets/Plugins/Lowscope/ComponentSaveSystem/Components) that use the ISaveable. Once added they get fetched directly.              
 Thanks to [the UnityValidateHierarchy](https://github.com/AlexMeesters/UnityValidateHierarchy) script.
-
-![Image of the saveable component](https://github.com/AlexMeesters/ComponentSaveSystem/blob/master/Images/Component-AddedSampleComponents.PNG)
 
 Here is an example of how to create your own script:
 
