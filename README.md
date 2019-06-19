@@ -72,4 +72,4 @@ public class ExampleScript : MonoBehaviour, ISaveable
 
 # Modifyable settings
 
-![ModifyableSettings]https://github.com/AlexMeesters/ComponentSaveSystem/blob/master/Images/pluginsettings.PNG?raw=true
+![ModifyableSettings](https://github.com/AlexMeesters/ComponentSaveSystem/blob/master/Images/pluginsettings.PNG?raw=true)
