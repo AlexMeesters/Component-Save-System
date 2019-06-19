@@ -19,7 +19,9 @@ This is useful in case you want to be able to easily save the state of multiple 
 You add a component called "Saveable" to the root of a GameObject which you want to save.
 This is a component that fetches all components that implement ISaveable. The saveable component responds to sync requests sent by the SaveMaster.
 
-![Image of the saveable component](https://github.com/AlexMeesters/ComponentSaveSystem/blob/master/Images/Component-AddedSampleComponents.PNG)
+<p align="center">![Image of the saveable component](https://github.com/AlexMeesters/ComponentSaveSystem/blob/master/Images/Component-AddedSampleComponents.PNG)
+  <img />
+</p>
 
 The image above is with [all pre-made components](https://github.com/AlexMeesters/ComponentSaveSystem/tree/master/Assets/Plugins/Lowscope/ComponentSaveSystem/Components) added that implement ISaveable.
 
