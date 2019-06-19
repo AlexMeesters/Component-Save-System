@@ -72,6 +72,3 @@ public class ExampleScript : MonoBehaviour, ISaveable
 
 ![Save architectue](https://github.com/AlexMeesters/ComponentSaveSystem/blob/master/Images/savearchitecture.jpg)
 
-## Available plugin settings
-
-![ModifyableSettings](https://github.com/AlexMeesters/ComponentSaveSystem/blob/master/Images/pluginsettings.PNG?raw=true)
