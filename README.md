@@ -81,7 +81,7 @@ Each object contains 4 saveable components:
 * Save Scale
 * Save Visibility
 
-### Test with 1000 objects (Non-Random positions, scale and rotations)
+### Test with 1000 unique objects (Non-Random positions, scale and rotations)
 
 - 1000 Object Sync & Write to disk : ~18 Milliseconds
 - 1000 Object Sync & Load to disk: ~26 Milliseconds
@@ -92,7 +92,7 @@ Resulting filesize:
 * Pretty Print: 395 KB
 * Non-pretty Print: 238 KB
 
-### Test with 1000 objects (Randomized positions, scale and rotations)
+### Test with 1000 unique objects (Randomized positions, scale and rotations)
 
 - 1000 Object Sync & Write to disk : ~26 Milliseconds
 - 1000 Object Sync & Load to disk: ~38 Milliseconds
