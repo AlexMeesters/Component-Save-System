@@ -90,7 +90,9 @@ On a i7 8700K:
 - 1000 Object Sync Load: ~15 Milliseconds
 
 Resulting filesize:
-395 KB
+
+Pretty Print: 395 KB
+Non-pretty Print: 238 KB
 
 ### Test with 1000 objects (Randomized positions and rotations)
 
