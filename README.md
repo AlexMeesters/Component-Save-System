@@ -75,7 +75,9 @@ public class ExampleScript : MonoBehaviour, ISaveable
 
 ## How to use
 
+When the plugin is imported, you can configure it by going to Saving/Open Save Settings
 
+![Save example image](https://github.com/AlexMeesters/Component-Save-System/blob/master/Images/pluginsettings.PNG?raw=true)
 
 ## Performance tests (I7 8700K and SSD)
 
