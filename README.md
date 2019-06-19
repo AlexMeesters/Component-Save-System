@@ -94,7 +94,7 @@ The SaveMaster gets instantiated before any scene loads using RunTimeInitializeO
 Meaning you can directly use the system. The methods below are most important. 
 It is reccomended to see what else is available.
 
-```
+```csharp
 // Returns the active slot. -1 means no slot is loaded
 SaveMaster.GetActiveSlot() 
 
