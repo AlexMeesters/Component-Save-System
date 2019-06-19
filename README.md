@@ -1,7 +1,7 @@
 # Unity Component Save System
 Save system that is developed to co-exist with the current component system of Unity.
 
-![Simple video to see it in action](https://giant.gfycat.com/FavorableVioletEastrussiancoursinghounds.webm)
+[Simple video to see it in action](https://giant.gfycat.com/FavorableVioletEastrussiancoursinghounds.webm)
 
 ## Another save system for Unity?
 How this solution differs from others is that you only have to write a save implementation per component (script).
