@@ -17,6 +17,7 @@ A component that fetches all components that implement ISaveable.
 
 
 Example with all pre-made components that use the ISaveable. Once added they get fetched directly.
+
 Thanks to [the UnityValidateHierarchy](https://github.com/AlexMeesters/UnityValidateHierarchy) script.
 
 ![Image of the saveable component](https://github.com/AlexMeesters/ComponentSaveSystem/blob/master/Images/Component-AddedSampleComponents.PNG)
