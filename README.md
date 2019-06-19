@@ -2,17 +2,17 @@
 Save system that is developed to co-exist with the current component system of Unity.
 
 ## Another save system for Unity?
+How this solution differs from others is that you only have to write a save implementation per component (script).
+This comes with the benefit that each object that has a component called "Saveable" will be saved uniquely.
 
-How this solution differs from others is that you only have to write an implementation per component.
-Meaning that you can place a Saveable component on as many GameObjects as you like. 
-
-Saveable Component = Component that fetches all components on the Game Object that implement ISaveable
-
-You could duplicate 50 objects that use the same components that implement ISaveable. And all these objects would still get saved individually. Since a Saveable Component has a global unique identifier, and duplicates are not allowed.
+You could duplicate 50 objects that use the same components that implement ISaveable. And all these objects would still get saved individually. Since a Saveable Component has a global unique identifier, and duplicates are not allowed, so a new ID gets generated.
+This is useful in case you want to be able to easily save the state of multiple NPCS.
 
 ## How it looks in the editor
 ![Image of the saveable component](https://github.com/AlexMeesters/ComponentSaveSystem/blob/master/Images/Component-Clean.PNG)
 
+
+## How does it work?
 
 ```csharp
 using Lowscope.Saving;
