@@ -1,13 +1,14 @@
 # Unity Component Save System
 Save system that is developed to co-exist with the current component system of Unity.
 
-## Another save system for Unity? There are plenty...
+## Another save system for Unity?
 
-How this solution differs from others is that it is made to be additive.
-Meaning that you can slap a Saveable component on as many GameObjects as you like. And it would still work without any extra trouble.
+How this solution differs from others is that you only have to write an implementation per component.
+Meaning that you can place a Saveable component on as many GameObjects as you like. 
 
-It is designed to be additive of nature, meaning you can slap it on any game object.
-And it will save it individually, based on the randomized GUID that is generated. You can modify this to your liking.
+Saveable Component = Component that fetches all components on the Game Object that implement ISaveable
+
+You could duplicate 50 objects that use the same components that implement ISaveable. And all these objects would still get saved individually. Since a Saveable Component has a global unique identifier, and duplicates are not allowed.
 
 ## How it looks in the editor
 ![Image of the saveable component](https://github.com/AlexMeesters/ComponentSaveSystem/blob/master/Images/Component-Clean.PNG)
