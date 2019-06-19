@@ -88,7 +88,6 @@ Each object contains 4 saveable components:
 - 1000 Object Sync Save: ~9 Milliseconds
 - 1000 Object Sync Load: ~15 Milliseconds
 
-Resulting filesize:
 * Pretty Print: 395 KB
 * Non-pretty Print: 238 KB
 
@@ -99,6 +98,5 @@ Resulting filesize:
 - 1000 Object Sync Save: ~12 Milliseconds
 - 1000 Object Sync Load: ~21 Milliseconds
 
-Resulting filesize:
 * Pretty Print: 809 KB
 * Non-pretty Print: 601 KB
