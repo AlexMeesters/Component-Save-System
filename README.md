@@ -16,7 +16,7 @@ This is useful in case you want to be able to easily save the state of multiple 
 
 ## How does it work in practice?
 
-Image of the "Saveable" component. 
+You add a component called "Saveable" to the root of a GameObject which you want to save.
 A component that fetches all components that implement ISaveable.
 
 ![Image of the saveable component](https://github.com/AlexMeesters/ComponentSaveSystem/blob/master/Images/Component-AddedSampleComponents.PNG)
