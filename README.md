@@ -73,7 +73,7 @@ public class ExampleScript : MonoBehaviour, ISaveable
 
 ```
 
-## Performance
+## Performance tests (I7 8700K and SSD)
 
 Each object contains 4 saveable components:
 * Save Position
@@ -83,7 +83,6 @@ Each object contains 4 saveable components:
 
 ### Test with 1000 objects (Non-Random positions, scale and rotations)
 
-On a i7 8700K:
 - 1000 Object Sync & Write to disk : ~18 Milliseconds
 - 1000 Object Sync & Load to disk: ~26 Milliseconds
 - 1000 Object Sync Save: ~9 Milliseconds
@@ -95,7 +94,6 @@ Resulting filesize:
 
 ### Test with 1000 objects (Randomized positions, scale and rotations)
 
-On a i7 8700K:
 - 1000 Object Sync & Write to disk : ~26 Milliseconds
 - 1000 Object Sync & Load to disk: ~38 Milliseconds
 - 1000 Object Sync Save: ~12 Milliseconds
