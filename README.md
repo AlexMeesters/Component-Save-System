@@ -105,7 +105,7 @@ Each object contains 4 saveable components:
 * Pretty Print: 809 KB
 * Non-pretty Print: 601 KB
 
-## Performance tests (Samsung Galaxy A3, MONO , Non-Random)
+### Performance tests (Samsung Galaxy A3, MONO , Non-Random)
 
 Initial save/loads can be a lot higher.
 
@@ -115,11 +115,11 @@ Initial save/loads can be a lot higher.
 - 1000 Object Sync Load: ~100 Milliseconds
 
 
-## Performance tests (Samsung Galaxy A3, MONO , Random)
+### Performance tests (Samsung Galaxy A3, MONO , Random)
 
 Initial save/loads can be a lot higher.
 
-- 1000 Object Sync & Write to disk : ~135 Milliseconds
-- 1000 Object Sync & Load from disk: ~184 Milliseconds
-- 1000 Object Sync Save: ~90 Milliseconds
-- 1000 Object Sync Load: ~112 Milliseconds ?
+- 1000 Object Sync & Write to disk : ~237 Milliseconds
+- 1000 Object Sync & Load from disk: ~320 Milliseconds
+- 1000 Object Sync Save: ~130 Milliseconds
+- 1000 Object Sync Load: ~200 Milliseconds
