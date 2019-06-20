@@ -183,7 +183,7 @@ Initial save/loads can be a lot higher.
 
 ## Credits
 
-This system was primarily made for the [RPG Farming Kit](https://assetstore.unity.com/packages/templates/packs/rpg-farming-kit-121080?aid=1101lHUQ). 
-After a lot of iterations it became more generalized since I also needed a save system in other projects.
+
+This system was primarily made and designed by me for the [RPG Farming Kit](https://assetstore.unity.com/packages/templates/packs/rpg-farming-kit-121080?aid=1101lHUQ). After a lot of iterations it became more generalized since I also needed a save system in other projects.
 
 In case you want to support me, please concider buying [Health Pro](https://assetstore.unity.com/packages/tools/utilities/health-pro-effects-132006?aid=1101lHUQ) or [RPG Farming Kit](https://assetstore.unity.com/packages/templates/packs/rpg-farming-kit-121080?aid=1101lHUQ). Or you can support me on [patreon](https://www.patreon.com/lowscope)
