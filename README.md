@@ -93,7 +93,7 @@ In case you want full control through just C# I reccomend turning all the autosa
 The SaveMaster gets instantiated before any scene loads using RunTimeInitializeOnLoad()
 Meaning you can directly use the system. 
 
-### Some of the main method the SaveMaster uses
+### Most used SaveMaster methods
 ```csharp
 // Returns the active slot. -1 means no slot is loaded
 SaveMaster.GetActiveSlot() 
