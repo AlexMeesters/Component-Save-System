@@ -180,3 +180,10 @@ Initial save/loads can be a lot higher.
 - 1000 Object Sync & Load from disk: ~320 Milliseconds
 - 1000 Object Sync Save: ~130 Milliseconds
 - 1000 Object Sync Load: ~200 Milliseconds
+
+## Credits
+
+This system was primarily made for the [RPG Farming Kit](https://assetstore.unity.com/packages/templates/packs/rpg-farming-kit-121080?aid=1101lHUQ). 
+After a lot of iterations it became more generalized since I also needed a save system in other projects.
+
+In case you want to support me, please concider buying [Health Pro](https://assetstore.unity.com/packages/tools/utilities/health-pro-effects-132006?aid=1101lHUQ) or [RPG Farming Kit](https://assetstore.unity.com/packages/templates/packs/rpg-farming-kit-121080?aid=1101lHUQ). Or you can support me on [patreon](https://www.patreon.com/lowscope)
