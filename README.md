@@ -19,9 +19,7 @@ This is useful in case you want to be able to easily save the state of multiple 
 You add a component called "Saveable" to the root of a GameObject which you want to save.
 This is a component that fetches all components that implement ISaveable. The saveable component responds to sync requests sent by the SaveMaster.
 
-<p align="center"> 
-<img src="https://github.com/AlexMeesters/ComponentSaveSystem/blob/master/Images/Component-AddedSampleComponents.PNG">
-</p>
+![AddedSampleComponents](https://github.com/AlexMeesters/ComponentSaveSystem/blob/master/Images/Component-AddedSampleComponents.PNG)
 
 The image above is with [all pre-made components](https://github.com/AlexMeesters/ComponentSaveSystem/tree/master/Assets/Plugins/Lowscope/ComponentSaveSystem/Components) added that implement ISaveable.
 
@@ -77,9 +75,7 @@ public class ExampleScript : MonoBehaviour, ISaveable
 
 When the plugin is imported, you can configure it by going to Saving/Open Save Settings in the top menu of Unity.
 
-<p align="center"> 
-<img src="https://github.com/AlexMeesters/Component-Save-System/blob/master/Images/pluginsettings.PNG">
-</p>
+![pluginsettings](https://github.com/AlexMeesters/Component-Save-System/blob/master/Images/pluginsettings.PNG)
 
 The most important settings during setup are:
 * Auto Save - Automatically writes current SaveGame to file upon ApplicationExit/Pause
