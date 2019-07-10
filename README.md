@@ -158,7 +158,7 @@ Each object contains 4 saveable components:
 * Pretty Print: 809 KB
 * Non-pretty Print: 601 KB
 
-## Performance tests (Samsung Galaxy A3, MONO , Non-Random)
+## Performance tests (Samsung Galaxy A3, MONO)
 
 ### Test with 1000 unique objects (4000 components, Samsung Galaxy A3, MONO , Random)
 
