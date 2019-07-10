@@ -17,7 +17,9 @@ This is useful in case you want to be able to easily save the state of multiple 
 ## How does it work in practice?
 
 You add a component called "Saveable" to the root of a GameObject which you want to save.
-This is a component that fetches all components that implement ISaveable. The saveable component responds to sync requests sent by the SaveMaster.
+This is a component that fetches all components that implement ISaveable. The saveable component responds to sync requests sent by the SaveMaster. 
+
+Saving to the SaveGame is also done by the Saveable when it gets destroyed, however nothing gets written to disk until the SaveMaster decides to actually save. The benefit of having destroyed objects set data on the SaveGame object is that it prevents objects from being excluded during a save action. So for instance when you exit a room, everything gets set but not written yet to file. This is great if you want to have specific "Save Points" and you don't want to think about how the objects in the other room get saved or loaded.
 
 ![AddedSampleComponents](https://github.com/AlexMeesters/ComponentSaveSystem/blob/master/Images/Component-AddedSampleComponents.PNG)
 
