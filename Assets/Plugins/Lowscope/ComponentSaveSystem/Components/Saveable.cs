@@ -73,7 +73,7 @@ namespace Lowscope.Saving.Components
             bool isPrefab;
 
 #if UNITY_2018_3_OR_NEWER 
-            isPrefab = PrefabUtility.IsPartOfPrefabAsset(this.gameObject);
+            isPrefab = UnityEditor.PrefabUtility.IsPartOfPrefabAsset(this.gameObject);
 #else
             isPrefab = this.gameObject.scene.name == null;
 #endif
