@@ -21,7 +21,7 @@ namespace Lowscope.Saving.Core
         {
             if (SaveMaster.DeactivatedObjectExplicitly(this.gameObject))
             {
-                SaveMaster.WipeData(saveable);
+                saveable.WipeData();
                 instanceManager.DestroyObject(saveable);
             }
         }

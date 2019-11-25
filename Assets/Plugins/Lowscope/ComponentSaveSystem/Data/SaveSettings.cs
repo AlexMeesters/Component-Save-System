@@ -116,28 +116,23 @@ namespace Lowscope.Saving.Data
         [Tooltip("The save system will increment the time played since load")]
         public bool trackTimePlayed = true;
         [Tooltip("When you disable this, writing the game only happens when you call SaveMaster.Save()")]
-        public bool autoSave = false;
+        public bool autoSave = true;
         [Tooltip("Should the game get saved when switching between game saves?")]
-        public bool autoSaveOnSlotSwitch = false;
+        public bool autoSaveOnSlotSwitch = true;
 
         [Header("Initialization")]
         public bool loadDefaultSlotOnStart = true;
         [Range(0, 299)]
         public int defaultSlot = 0;
-        public string defaultStartScene = "";
+        public bool autoInitializeSaveMaster = true;
 
         [Header("Extras")]
-        public bool useHotkeys = true;
-        public KeyCode openSlotMenuKey = KeyCode.F1;
+        public bool useHotkeys = false;
         public KeyCode saveGameKey = KeyCode.F2;
-        public KeyCode loadGameKey = KeyCode.F3;
         public KeyCode syncSaveGameKey = KeyCode.F4;
         public KeyCode syncLoadGameKey = KeyCode.F5;
 
-        public bool useSlotMenu = true;
-        public GameObject openSlotMenuPrefab = null;
-
         [Header("Debug (Unity Editor Only)")]
-        public bool showSaveFileUtilityLog;
+        public bool showSaveFileUtilityLog = false;
     }
 }

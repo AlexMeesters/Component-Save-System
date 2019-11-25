@@ -12,6 +12,7 @@ namespace Lowscope.Saving.Components
     public class SaveRotation : MonoBehaviour, ISaveable
     {
         private Vector3 lastRotation;
+        private Vector3 activeRotation;
 
         [System.Serializable]
         public struct SaveData
@@ -27,13 +28,14 @@ namespace Lowscope.Saving.Components
 
         public string OnSave()
         {
-            lastRotation = this.transform.rotation.eulerAngles;
+            lastRotation = activeRotation;
             return JsonUtility.ToJson(new SaveData() { rotation = this.transform.rotation.eulerAngles });
         }
 
         public bool OnSaveCondition()
         {
-            return lastRotation != this.transform.rotation.eulerAngles;
+            activeRotation = this.transform.rotation.eulerAngles;
+            return lastRotation != activeRotation;
         }
     }
 }

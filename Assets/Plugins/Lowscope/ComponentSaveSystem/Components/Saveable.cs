@@ -27,7 +27,10 @@ namespace Lowscope.Saving.Components
         [SerializeField, HideInInspector]
         private List<SaveableComponent> saveableComponents = new List<SaveableComponent>();
 
-        private Dictionary<string, ISaveable> saveableComponentDictionary = new Dictionary<string, ISaveable>();
+        //private Dictionary<string, ISaveable> saveableComponentDictionary = new Dictionary<string, ISaveable>();
+
+        private List<string> saveableComponentIDs = new List<string>();
+        private List<ISaveable> saveableComponentObjects = new List<ISaveable>();
 
         public string saveIdentification;
 
@@ -42,11 +45,6 @@ namespace Lowscope.Saving.Components
             public string identifier;
             public MonoBehaviour monoBehaviour;
         }
-
-        // Used to know if specific data is already contained within the save structure array
-        private Dictionary<string, int> iSaveableDataIdentifiers = new Dictionary<string, int>();
-
-        private ISaveableDataCollection iSaveableData = new ISaveableDataCollection();
 
         private SaveGame cachedSaveGame;
 
@@ -70,10 +68,13 @@ namespace Lowscope.Saving.Components
 
         public void OnValidate()
         {
+            if (Application.isPlaying)
+                return;
+
             bool isPrefab;
 
 #if UNITY_2018_3_OR_NEWER 
-            isPrefab = PrefabUtility.IsPartOfPrefabAsset(this.gameObject);
+            isPrefab = UnityEditor.PrefabUtility.IsPartOfPrefabAsset(this.gameObject);
 #else
             isPrefab = this.gameObject.scene.name == null;
 #endif
@@ -146,7 +147,14 @@ namespace Lowscope.Saving.Components
                     }
                 }
 
-                saveableComponents.RemoveAll(s => s.monoBehaviour == null);
+                int saveableComponentCount = saveableComponents.Count;
+                for (int i = saveableComponentCount - 1; i >= 0; i--)
+                {
+                    if (saveableComponents[i] == null)
+                    {
+                        saveableComponents.RemoveAt(i);
+                    }
+                }
 
                 ISaveable[] cachedSaveables = new ISaveable[saveableComponents.Count];
                 for (int i = 0; i < cachedSaveables.Length; i++)
@@ -170,7 +178,7 @@ namespace Lowscope.Saving.Components
                     while (!IsIdentifierUnique(identifier))
                     {
                         string guidString = System.Guid.NewGuid().ToString().Substring(0, 5);
-                        identifier = string.Format("{0} {1}", typeString, guidString);
+                        identifier = string.Format("{0}-{1}", typeString, guidString);
                     }
 
                     newSaveableComponent.identifier = identifier;
@@ -222,7 +230,8 @@ namespace Lowscope.Saving.Components
 
         public void AddSaveableComponent(string identifier, ISaveable iSaveable)
         {
-            saveableComponentDictionary.Add(identifier, iSaveable);
+            saveableComponentIDs.Add(string.Format("{0}-{1}", saveIdentification, identifier));
+            saveableComponentObjects.Add(iSaveable);
 
             // Load it again, to ensure all ISaveable interfaces are updated.
             if (cachedSaveGame != null)
@@ -236,7 +245,8 @@ namespace Lowscope.Saving.Components
             // Store the component identifiers into a dictionary for performant retrieval.
             for (int i = 0; i < saveableComponents.Count; i++)
             {
-                saveableComponentDictionary.Add(saveableComponents[i].identifier, saveableComponents[i].monoBehaviour as ISaveable);
+                saveableComponentIDs.Add(string.Format("{0}-{1}", saveIdentification, saveableComponents[i].identifier));
+                saveableComponentObjects.Add(saveableComponents[i].monoBehaviour as ISaveable);
             }
 
             if (!manualSaveLoad)
@@ -258,6 +268,22 @@ namespace Lowscope.Saving.Components
 #endif
         }
 
+        /// <summary>
+        /// Removes all save data related to this component
+        /// </summary>
+        public void WipeData()
+        {
+            if (cachedSaveGame != null)
+            {
+                int componentCount = saveableComponentIDs.Count;
+
+                for (int i = componentCount - 1; i >= 0; i--)
+                {
+                    cachedSaveGame.Remove(saveableComponentIDs[i]);
+                }
+            }
+        }
+
         // Request is sent by the Save System
         public void OnSaveRequest(SaveGame saveGame)
         {
@@ -271,52 +297,30 @@ namespace Lowscope.Saving.Components
                 return;
             }
 
-            bool hasSaved = false;
+            int componentCount = saveableComponentIDs.Count;
 
-            // Get all saveable components
-            foreach (KeyValuePair<string, ISaveable> item in saveableComponentDictionary)
+            for (int i = componentCount - 1; i >= 0; i--)
             {
-                int getSavedIndex = -1;
+                ISaveable getSaveable = saveableComponentObjects[i];
+                string getIdentification = saveableComponentIDs[i];
 
-                if (item.Value == null)
+                if (getSaveable == null)
                 {
-                    Debug.Log(string.Format("Invalid component: {0}", item.Key));
-                    continue;
-                }
-
-                // Skip if the component does not want to be saved
-                if (item.Value.OnSaveCondition() == false)
-                {
-                    continue;
+                    Debug.Log(string.Format("Failed to save component: {0}. Component is potentially destroyed.", getIdentification));
+                    saveableComponentIDs.RemoveAt(i);
+                    saveableComponentObjects.RemoveAt(i);
                 }
                 else
                 {
-                    hasSaved = true;
+                    if (getSaveable.OnSaveCondition() == false)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        saveGame.Set(getIdentification, getSaveable.OnSave());
+                    }
                 }
-
-                // Store the info from the ISaveable into a struct
-                ISaveableData saveStructure = new ISaveableData()
-                {
-                    identifier = item.Key,
-                    data = item.Value.OnSave()
-                };
-
-                // Store the structure into a collection, as there are multiple components that may have the ISaveable interface.
-                if (!iSaveableDataIdentifiers.TryGetValue(item.Key, out getSavedIndex))
-                {
-                    iSaveableData.saveStructures.Add(saveStructure);
-                    iSaveableDataIdentifiers.Add(item.Key, iSaveableData.saveStructures.Count - 1);
-                }
-                else
-                {
-                    iSaveableData.saveStructures[getSavedIndex] = saveStructure;
-                }
-            }
-
-            if (hasSaved)
-            {
-                // The collection will be passed into the savegame using the identification that has been assigned to this component.
-                saveGame.Set(saveIdentification, JsonUtility.ToJson(iSaveableData, SaveSettings.Get().useJsonPrettyPrint));
             }
         }
 
@@ -328,8 +332,6 @@ namespace Lowscope.Saving.Components
                 if (cachedSaveGame != null)
                 {
                     hasLoaded = false;
-                    iSaveableData = null;
-                    iSaveableDataIdentifiers.Clear();
                 }
 
                 cachedSaveGame = saveGame;
@@ -352,33 +354,29 @@ namespace Lowscope.Saving.Components
                 return;
             }
 
-            iSaveableData = JsonUtility.FromJson<ISaveableDataCollection>(saveGame.Get(saveIdentification));
+            int componentCount = saveableComponentIDs.Count;
 
-            if (iSaveableData != null)
+            for (int i = componentCount - 1; i >= 0; i--)
             {
-                for (int i = 0; i < iSaveableData.saveStructures.Count; i++)
+                ISaveable getSaveable = saveableComponentObjects[i];
+                string getIdentification = saveableComponentIDs[i];
+
+                if (getSaveable == null)
                 {
-                    // Try to get a saveable component by it's unique identifier.
-                    ISaveable getSaveable;
-                    saveableComponentDictionary.TryGetValue(iSaveableData.saveStructures[i].identifier, out getSaveable);
+                    Debug.Log(string.Format("Failed to save component: {0}. Component is potentially destroyed.", getIdentification));
+                    saveableComponentIDs.RemoveAt(i);
+                    saveableComponentObjects.RemoveAt(i);
+                }
+                else
+                {
+                    string getData = saveGame.Get(saveableComponentIDs[i]);
 
-                    if (getSaveable != null)
+                    if (!string.IsNullOrEmpty(getData))
                     {
-                        getSaveable.OnLoad(iSaveableData.saveStructures[i].data);
-
-                        if (!iSaveableDataIdentifiers.ContainsKey(iSaveableData.saveStructures[i].identifier))
-                        {
-                            iSaveableDataIdentifiers.Add(iSaveableData.saveStructures[i].identifier, i);
-                        }
+                        getSaveable.OnLoad(getData);
                     }
                 }
             }
-            else
-            {
-                iSaveableData = new ISaveableDataCollection();
-            }
-
-            hasLoaded = true;
         }
     }
 }

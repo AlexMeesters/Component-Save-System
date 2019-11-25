@@ -18,7 +18,6 @@ namespace Lowscope.Saving.Data
             public int gameVersion;
             public string creationDate;
             public string timePlayed;
-            public string lastActiveScene;
         }
 
         [Serializable]
@@ -31,7 +30,6 @@ namespace Lowscope.Saving.Data
         [NonSerialized] public TimeSpan timePlayed;
         [NonSerialized] public int gameVersion;
         [NonSerialized] public DateTime creationDate;
-        [NonSerialized] public string lastActiveScene;
 
         [SerializeField] private MetaData metaData;
         [SerializeField] private List<Data> saveData = new List<Data>();
@@ -53,9 +51,6 @@ namespace Lowscope.Saving.Data
             metaData.gameVersion = gameVersion;
             metaData.timePlayed = timePlayed.ToString();
 
-            lastActiveScene = SceneManager.GetActiveScene().name;
-            metaData.lastActiveScene = lastActiveScene;
-
             int sceneCount = SceneManager.sceneCount;
         }
 
@@ -66,12 +61,15 @@ namespace Lowscope.Saving.Data
             DateTime.TryParse(metaData.creationDate, out creationDate);
             TimeSpan.TryParse(metaData.timePlayed, out timePlayed);
 
-            lastActiveScene = metaData.lastActiveScene;
-
             if (saveData.Count > 0)
             {
                 // Clear all empty data on load.
-                saveData.RemoveAll(s => string.IsNullOrEmpty(s.data));
+                int dataCount = saveData.Count;
+                for (int i = dataCount - 1; i >= 0; i--)
+                {
+                    if (string.IsNullOrEmpty(saveData[i].data))
+                        saveData.RemoveAt(i);
+                }
 
                 for (int i = 0; i < saveData.Count; i++)
                 {

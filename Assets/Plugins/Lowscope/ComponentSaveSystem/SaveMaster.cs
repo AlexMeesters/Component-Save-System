@@ -35,15 +35,18 @@ namespace Lowscope.Saving
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void CreateInstance()
         {
-            GameObject saveMasterObject = new GameObject("Save Master");
-            instance = saveMasterObject.AddComponent<SaveMaster>();
+            if (SaveSettings.Get().autoInitializeSaveMaster)
+            {
+                GameObject saveMasterObject = new GameObject("Save Master");
+                instance = saveMasterObject.AddComponent<SaveMaster>();
 
-            saveInstanceManagers = new Dictionary<string, SaveInstanceManager>();
+                saveInstanceManagers = new Dictionary<string, SaveInstanceManager>();
 
-            SceneManager.sceneLoaded += OnSceneLoaded;
-            SceneManager.sceneUnloaded += OnSceneUnloaded;
+                SceneManager.sceneLoaded += OnSceneLoaded;
+                SceneManager.sceneUnloaded += OnSceneUnloaded;
 
-            GameObject.DontDestroyOnLoad(saveMasterObject);
+                GameObject.DontDestroyOnLoad(saveMasterObject);
+            }
         }
 
         /*  
@@ -162,114 +165,24 @@ namespace Lowscope.Saving
         }
 
         /// <summary>
-        /// Will load the last used scenes for save game, and set the slot. 
-        /// Current scene also gets saved, if any slot is currently set.
-        /// If slot is empty, it will still set it, and load the default set starting scene.
-        /// </summary>
-        /// <param name="slot"> Save slot to load, it will create a new one if empty </param>
-        /// <param name="defaultScene"> Scene to load in case the save is empty </param>
-        /// <param name="defaultScene"> Additional scenes to load in case the save is empty </param>
-        public static bool LoadSlot(int slot, string defaultScene = "")
-        {
-            // Ensure the current game is saved, and write it to disk, if that is wanted behaviour.
-            if (SaveSettings.Get().autoSave && SaveSettings.Get().autoSaveOnSlotSwitch && activeSaveGame != null)
-            {
-                WriteActiveSaveToDisk();
-            }
-
-            bool slotExists = SaveFileUtility.IsSlotUsed(slot);
-
-            string startScene = string.IsNullOrEmpty(defaultScene) ? SaveSettings.Get().defaultStartScene : defaultScene;
-
-            // Default can also still be empty.
-            if (!slotExists && string.IsNullOrEmpty(startScene))
-            {
-                SaveMaster.SetSlot(slot, false);
-                //Debug.Log("Slot is empty: Please set a default starting scene.");
-                return true;
-            }
-
-            SaveGame save = SaveFileUtility.LoadSave(slot, true);
-
-            var activeScene = !slotExists ? startScene : save.lastActiveScene;
-
-            if (SceneUtility.GetBuildIndexByScenePath(activeScene) == -1)
-            {
-                Debug.Log(string.Format("Attempted to load scene named {0}. This scene is not added in the build list",
-                    activeScene));
-                return false;
-            }
-
-            instance.StartCoroutine(LoadSlotCoroutine(slot, activeScene, save));
-            return true;
-        }
-
-        // Coroutine is used to properly unload other scenes before switching saves.
-        // This ensures the previous SaveGame has all data written. Since ISaveable components
-        // Write to the SaveGame upon Destruction. Afterwards when the slot changes, and autosave is toggled on it 
-        // will write that SaveGame to the disk.
-        private static IEnumerator LoadSlotCoroutine(int slot, string activeScene, SaveGame saveGame)
-        {
-            // Get all scenes to unload
-            Scene[] scenesToUnload = new Scene[SceneManager.sceneCount];
-            AsyncOperation[] sceneUnloadActions = new AsyncOperation[SceneManager.sceneCount];
-
-            for (int i = 0; i < SceneManager.sceneCount; i++)
-            {
-                scenesToUnload[i] = SceneManager.GetSceneAt(i);
-            }
-
-            // Create temporary scene so it's possible to unload everything.
-            // (Has to be done because of a Unity bug)
-            SceneManager.CreateScene("-");
-
-            for (int i = 0; i < scenesToUnload.Length; i++)
-            {
-                sceneUnloadActions[i] = SceneManager.UnloadSceneAsync(scenesToUnload[i]);
-            }
-
-            int actionCount = sceneUnloadActions.Length;
-
-            while (true)
-            {
-                int loadCount = 0;
-                for (int i = 0; i < actionCount; i++)
-                {
-                    if (sceneUnloadActions[i].isDone)
-                    {
-                        loadCount++;
-                    }
-                }
-
-                if (loadCount >= actionCount - 1)
-                {
-                    break;
-                }
-
-                yield return null;
-            }
-
-            yield return null;
-
-            SaveMaster.SetSlot(slot, false, saveGame);
-
-            yield return null;
-
-            var op = SceneManager.LoadSceneAsync(activeScene);
-            op.allowSceneActivation = false;
-
-            yield return new WaitUntil(() => op.progress == 0.9f);
-
-            op.allowSceneActivation = true;
-        }
-
-        /// <summary>
         /// Set the active save slot
         /// </summary>
         /// <param name="slot"> Target save slot </param>
         /// <param name="notifyListeners"> Send a message to all saveables to load the new save file </param>
         public static void SetSlot(int slot, bool notifyListeners, SaveGame saveGame = null)
         {
+            if (activeSlot == slot)
+            {
+                Debug.LogWarning("Already loaded this slot.");
+                return;
+            }
+
+            // Ensure the current game is saved, and write it to disk, if that is wanted behaviour.
+            if (SaveSettings.Get().autoSave && SaveSettings.Get().autoSaveOnSlotSwitch && activeSaveGame != null)
+            {
+                WriteActiveSaveToDisk();
+            }
+
             if (slot < 0 || slot > SaveSettings.Get().maxSaveSlotCount)
             {
                 Debug.LogWarning("SaveMaster: Attempted to set illegal slot.");
@@ -430,23 +343,6 @@ namespace Lowscope.Saving
         }
 
         /// <summary>
-        /// Wipes all data relevant to the given saveable component.
-        /// </summary>
-        /// <param name="saveable"></param>
-        public static void WipeData(Saveable saveable)
-        {
-            if (saveable != null)
-            {
-                saveables.Remove(saveable);
-                activeSaveGame.Remove(saveable.saveIdentification);
-            }
-            else
-            {
-                Debug.LogError("SaveMaster: Attempted to remove a null saveable reference");
-            }
-        }
-
-        /// <summary>
         /// Sends request to all saveables to store data to the active save game
         /// </summary>
         public static void SyncSave()
@@ -512,22 +408,14 @@ namespace Lowscope.Saving
                 return false;
             }
 
-            string getDataCollection = saveGame.Get(saveableId);
+            string dataString = saveGame.Get(string.Format("{0}-{1}", saveableId , componentId));
 
-            if (!string.IsNullOrEmpty(getDataCollection))
+            if (!string.IsNullOrEmpty(dataString))
             {
-                var dataCollection = JsonUtility.FromJson<ISaveableDataCollection>(getDataCollection);
+                data = JsonUtility.FromJson<T>(dataString);
 
-                ISaveableData componentData;
-
-                if (dataCollection.GetData(componentId, out componentData))
-                {
-                    if (!string.IsNullOrEmpty(componentData.data))
-                    {
-                        data = JsonUtility.FromJson<T>(componentData.data);
-                        return true;
-                    }
-                }
+                if (data != null)
+                    return true;
             }
 
             data = default(T);
@@ -648,7 +536,7 @@ namespace Lowscope.Saving
                 StartCoroutine(IncrementTimePlayed());
             }
 
-            if (settings.useSlotMenu || settings.useHotkeys)
+            if (settings.useHotkeys)
             {
                 StartCoroutine(TrackOpenSlotMenu());
             }
@@ -657,23 +545,10 @@ namespace Lowscope.Saving
         private IEnumerator TrackOpenSlotMenu()
         {
             var settings = SaveSettings.Get();
-            GameObject instance = null;
 
             while (true)
             {
                 yield return null;
-
-                if (settings.useSlotMenu && Input.GetKeyDown(settings.openSlotMenuKey))
-                {
-                    if (instance == null)
-                    {
-                        instance = GameObject.Instantiate(settings.openSlotMenuPrefab);
-                    }
-                    else
-                    {
-                        instance.gameObject.SetActive(!instance.gameObject.activeSelf);
-                    }
-                }
 
                 if (!settings.useHotkeys)
                 {
@@ -689,17 +564,6 @@ namespace Lowscope.Saving
 
                     stopWatch.Stop();
                     Debug.Log(string.Format("Synced objects & Witten game to disk. MS: {0}", stopWatch.ElapsedMilliseconds.ToString()));
-                }
-
-                if (Input.GetKeyDown(settings.loadGameKey))
-                {
-                    var stopWatch = new System.Diagnostics.Stopwatch();
-                    stopWatch.Start();
-
-                    LoadSlot(activeSlot);
-
-                    stopWatch.Stop();
-                    Debug.Log(string.Format("Synced objects & Loaded game from disk. MS: {0}", stopWatch.ElapsedMilliseconds.ToString()));
                 }
 
                 if (Input.GetKeyDown(settings.syncSaveGameKey))
