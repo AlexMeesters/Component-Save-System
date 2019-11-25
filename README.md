@@ -17,11 +17,11 @@ This is useful in case you want to be able to easily save the state of multiple 
 ## How does it work in practice?
 
 You add a component called "Saveable" to the root of a GameObject which you want to save.
-This is a component that fetches all components that implement ISaveable. The saveable component responds to sync requests sent by the SaveMaster.
+This is a component that fetches all components that implement ISaveable. The saveable component responds to sync requests sent by the SaveMaster. 
 
-<p align="center"> 
-<img src="https://github.com/AlexMeesters/ComponentSaveSystem/blob/master/Images/Component-AddedSampleComponents.PNG">
-</p>
+Saving to the SaveGame is also done by the Saveable when it gets destroyed, however nothing gets written to disk until the SaveMaster decides to actually save. The benefit of having destroyed objects set data on the SaveGame object is that it prevents objects from being excluded during a save action. So for instance when you exit a room, everything gets set but not written yet to file. This is great if you want to have specific "Save Points" and you don't want to think about how the objects in the other room get saved or loaded.
+
+![AddedSampleComponents](https://github.com/AlexMeesters/ComponentSaveSystem/blob/master/Images/Component-AddedSampleComponents.PNG)
 
 The image above is with [all pre-made components](https://github.com/AlexMeesters/ComponentSaveSystem/tree/master/Assets/Plugins/Lowscope/ComponentSaveSystem/Components) added that implement ISaveable.
 
@@ -73,11 +73,64 @@ public class ExampleScript : MonoBehaviour, ISaveable
 
 ```
 
+## How to use
+
+When the plugin is imported, you can configure it by going to Saving/Open Save Settings in the top menu of Unity.
+
+![pluginsettings](https://github.com/AlexMeesters/Component-Save-System/blob/master/Images/pluginsettings.PNG)
+
+The most important settings during setup are:
+* Auto Save - Automatically writes current SaveGame to file upon ApplicationExit/Pause
+* Auto Save On Slot Switch - Automatically writes current SaveGame upon switching save slot
+* Load Default slot on start - Once startup, the component will automatically load the designated slot.
+This is useful if you don't plan on using any other save slots, and you just want to have your game saved.
+
+Also take note of the hotkeys and use slot menu in the extras tab. 
+
+In case you want full control through just C# I reccomend turning all the autosaving off.
+The SaveMaster gets instantiated before any scene loads using RunTimeInitializeOnLoad()
+Meaning you can directly use the system. 
+
+### Most used SaveMaster methods
+```csharp
+// Returns the active slot. -1 means no slot is loaded
+SaveMaster.GetActiveSlot() 
+
+// Tries to set the current slot to the last used one.
+SaveMaster.SetSlotToLastUsedSlot(bool syncListeners) 
+
+// Tries to load the last used slot
+SaveMaster.LoadLastUsedSlot()
+
+// Attempts to set the slot to the first unused slot. Useful for creating a new game.
+SaveMaster.SetSlotToFirstUnused(bool syncListeners, out int slot)
+
+// Will load the last used scene for save game, and set the slot. 
+// Current scene also gets saved, if any slot is currently set. (And if AutoSaveOnSlotSwitch is on)
+// If slot is empty, it will still set it, and load the default set starting scene.
+SaveMaster.LoadSlot(int slot, string defaultScene = "")
+
+// Set the active save slot
+SaveMaster.SetSlot(int slot, bool syncListeners)
+
+// Attempts to get a SaveGame, purely for the data.
+SaveMaster.GetSave(int slot, bool createIfEmpty = true)
+
+//Removes the active save file. Based on the save slot index.
+SaveMaster.DeleteActiveSaveGame()
+
+// Sends notification to all subscribed Saveables to save to the SaveGame
+Savemaster.SyncSave()
+
+// Sends notification to all subscribed Saveables to load from the SaveGame
+Savemaster.LoadSave()
+```
+
 ## Performance tests (I7 8700K and SSD)
 
-Keep in mind that in normal circumstances, you would not sync 1000 objects at a time, unless you do it explicitly.
-This is because objects get written to the SaveGame class when they are destroyed. And eventually this SaveGame is written to Disk
-upon game exit/pause, slot switch or savepoint. This depends on the plugin configuration you choose to have.
+Keep in mind that in normal circumstances, you would not sync 4000 components at a time, unless you do it explicitly.
+This is because all components that implement ISaveable get written to the SaveGame class when the GameObject gets destroyed. 
+And eventually this SaveGame is written to Disk upon game exit/pause, slot switch or savepoint. This depends on the plugin configuration you choose to have.
 
 Each object contains 4 saveable components:
 * Save Position
@@ -105,7 +158,7 @@ Each object contains 4 saveable components:
 * Pretty Print: 809 KB
 * Non-pretty Print: 601 KB
 
-## Performance tests (Samsung Galaxy A3, MONO , Non-Random)
+## Performance tests (Samsung Galaxy A3, MONO)
 
 ### Test with 1000 unique objects (4000 components, Samsung Galaxy A3, MONO , Random)
 
@@ -125,3 +178,11 @@ Initial save/loads can be a lot higher.
 - 1000 Object Sync & Load from disk: ~320 Milliseconds
 - 1000 Object Sync Save: ~130 Milliseconds
 - 1000 Object Sync Load: ~200 Milliseconds
+
+## Credits
+
+
+This system was primarily made and designed for the [RPG Farming Kit](https://assetstore.unity.com/packages/templates/packs/rpg-farming-kit-121080?aid=1101lHUQ). After a lot of iterations it became more generalized since I also needed a save system in other projects.
+All the code & design of it was done by me. Any constructive criticism/feedback on it is appreciated!
+
+In case you want to support me, please concider buying [Health Pro](https://assetstore.unity.com/packages/tools/utilities/health-pro-effects-132006?aid=1101lHUQ) or [RPG Farming Kit](https://assetstore.unity.com/packages/templates/packs/rpg-farming-kit-121080?aid=1101lHUQ). Or you can support me on my desolated [Patreon](https://www.patreon.com/lowscope)
