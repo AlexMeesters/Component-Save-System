@@ -69,21 +69,19 @@ public class TestScript : MonoBehaviour, ISaveable
 ## How the save file looks like with just the ExampleScript:
 
 ```json
-
-Ñ{
+Ô{
     "metaData": {
         "gameVersion": 0,
-        "creationDate": "11/26/2019 1:02:40 PM",
-        "timePlayed": "00:00:15"
+        "creationDate": "11/26/2019 2:47:31 PM",
+        "timePlayed": "00:00:20"
     },
     "saveData": [
         {
-            "guid": "TestScene-TestScriptGameobject-d4dbf-TestScriptOne-0ea15",
-            "data": "{\"Name\":\"My Name\",\"Experience\":25,\"Health\":25}"
+            "guid": "TestScene-TestScriptGameobject-d4dbf-TestScriptTwo-ac11c",
+            "data": "{\"Name\":\"Test Name\",\"Experience\":100,\"Health\":50}"
         }
     ]
 }
-
 ```
 
 The guid is defined as:
