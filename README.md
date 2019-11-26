@@ -185,6 +185,7 @@ Initial save/loads can be higher.
 
 ## Credits
 
+Made by me, Alex Meesters. I'm currently using it in product that I create under the company name "Lowscope".
 
 This system was primarily made and designed for the [RPG Farming Kit](https://assetstore.unity.com/packages/templates/packs/rpg-farming-kit-121080?aid=1101lHUQ). After a lot of iterations it became more generalized since I also needed a save system in other projects.
 All the code & design of it was done by me. Any constructive criticism/feedback on it is appreciated!
