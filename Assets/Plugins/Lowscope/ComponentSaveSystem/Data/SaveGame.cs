@@ -88,10 +88,6 @@ namespace Lowscope.Saving.Data
                 saveData[saveIndex] = new Data();
                 saveDataCache.Remove(id);
             }
-            else
-            {
-                Debug.LogWarning("Attempted to remove empty save data");
-            }
         }
 
         /// <summary>

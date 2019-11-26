@@ -116,7 +116,7 @@ namespace Lowscope.Saving.Data
         [Tooltip("The save system will increment the time played since load")]
         public bool trackTimePlayed = true;
         [Tooltip("When you disable this, writing the game only happens when you call SaveMaster.Save()")]
-        public bool autoSave = true;
+        public bool autoSaveOnExit = true;
         [Tooltip("Should the game get saved when switching between game saves?")]
         public bool autoSaveOnSlotSwitch = true;
 
@@ -124,7 +124,6 @@ namespace Lowscope.Saving.Data
         public bool loadDefaultSlotOnStart = true;
         [Range(0, 299)]
         public int defaultSlot = 0;
-        public bool autoInitializeSaveMaster = true;
 
         [Header("Extras")]
         public bool useHotkeys = false;

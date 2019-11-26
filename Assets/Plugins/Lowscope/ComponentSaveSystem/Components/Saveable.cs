@@ -24,8 +24,8 @@ namespace Lowscope.Saving.Components
         [SerializeField, Tooltip("It will scan other objects for ISaveable components")]
         private List<GameObject> externalListeners = new List<GameObject>();
 
-        [SerializeField, HideInInspector]
-        private List<SaveableComponent> saveableComponents = new List<SaveableComponent>();
+        [SerializeField]
+        private List<CachedSaveableComponent> cachedSaveableComponents = new List<CachedSaveableComponent>();
 
         //private Dictionary<string, ISaveable> saveableComponentDictionary = new Dictionary<string, ISaveable>();
 
@@ -40,7 +40,7 @@ namespace Lowscope.Saving.Components
         /// Means of storing all saveable components for the ISaveable component.
         /// </summary>
         [System.Serializable]
-        public class SaveableComponent
+        public class CachedSaveableComponent
         {
             public string identifier;
             public MonoBehaviour monoBehaviour;
@@ -63,7 +63,7 @@ namespace Lowscope.Saving.Components
 
         private void SetIdentifcation(int index, string identifier)
         {
-            saveableComponents[index].identifier = identifier;
+            cachedSaveableComponents[index].identifier = identifier;
         }
 
         public void OnValidate()
@@ -87,6 +87,7 @@ namespace Lowscope.Saving.Components
                 bool isDuplicate = false;
                 Saveable saveable = null;
 
+                // Does the object have a valid save id? If not, we give a new one.
                 if (!string.IsNullOrEmpty(saveIdentification))
                 {
                     isDuplicate = saveIdentificationCache.TryGetValue(saveIdentification, out saveable);
@@ -129,44 +130,44 @@ namespace Lowscope.Saving.Components
                     obtainSaveables.AddRange(externalListeners[i].GetComponentsInChildren<ISaveable>(true).ToList());
             }
 
-            for (int i = saveableComponents.Count - 1; i >= 0; i--)
+            for (int i = cachedSaveableComponents.Count - 1; i >= 0; i--)
             {
-                if (saveableComponents[i].monoBehaviour == null)
+                if (cachedSaveableComponents[i].monoBehaviour == null)
                 {
-                    saveableComponents.RemoveAt(i);
+                    cachedSaveableComponents.RemoveAt(i);
                 }
             }
 
-            if (obtainSaveables.Count != saveableComponents.Count)
+            if (obtainSaveables.Count != cachedSaveableComponents.Count)
             {
-                if (saveableComponents.Count > obtainSaveables.Count)
+                if (cachedSaveableComponents.Count > obtainSaveables.Count)
                 {
-                    for (int i = saveableComponents.Count - 1; i >= obtainSaveables.Count; i--)
+                    for (int i = cachedSaveableComponents.Count - 1; i >= obtainSaveables.Count; i--)
                     {
-                        saveableComponents.RemoveAt(i);
+                        cachedSaveableComponents.RemoveAt(i);
                     }
                 }
 
-                int saveableComponentCount = saveableComponents.Count;
+                int saveableComponentCount = cachedSaveableComponents.Count;
                 for (int i = saveableComponentCount - 1; i >= 0; i--)
                 {
-                    if (saveableComponents[i] == null)
+                    if (cachedSaveableComponents[i] == null)
                     {
-                        saveableComponents.RemoveAt(i);
+                        cachedSaveableComponents.RemoveAt(i);
                     }
                 }
 
-                ISaveable[] cachedSaveables = new ISaveable[saveableComponents.Count];
+                ISaveable[] cachedSaveables = new ISaveable[cachedSaveableComponents.Count];
                 for (int i = 0; i < cachedSaveables.Length; i++)
                 {
-                    cachedSaveables[i] = saveableComponents[i].monoBehaviour as ISaveable;
+                    cachedSaveables[i] = cachedSaveableComponents[i].monoBehaviour as ISaveable;
                 }
 
                 ISaveable[] missingElements = obtainSaveables.Except(cachedSaveables).ToArray();
 
                 for (int i = 0; i < missingElements.Length; i++)
                 {
-                    SaveableComponent newSaveableComponent = new SaveableComponent()
+                    CachedSaveableComponent newSaveableComponent = new CachedSaveableComponent()
                     {
                         monoBehaviour = missingElements[i] as MonoBehaviour
                     };
@@ -183,8 +184,10 @@ namespace Lowscope.Saving.Components
 
                     newSaveableComponent.identifier = identifier;
 
-                    saveableComponents.Add(newSaveableComponent);
+                    cachedSaveableComponents.Add(newSaveableComponent);
                 }
+
+                UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(this.gameObject.scene);
             }
         }
 
@@ -193,9 +196,9 @@ namespace Lowscope.Saving.Components
             if (string.IsNullOrEmpty(identifier))
                 return false;
 
-            for (int i = 0; i < saveableComponents.Count; i++)
+            for (int i = 0; i < cachedSaveableComponents.Count; i++)
             {
-                if (saveableComponents[i].identifier == identifier)
+                if (cachedSaveableComponents[i].identifier == identifier)
                 {
                     return false;
                 }
@@ -243,10 +246,10 @@ namespace Lowscope.Saving.Components
         private void Awake()
         {
             // Store the component identifiers into a dictionary for performant retrieval.
-            for (int i = 0; i < saveableComponents.Count; i++)
+            for (int i = 0; i < cachedSaveableComponents.Count; i++)
             {
-                saveableComponentIDs.Add(string.Format("{0}-{1}", saveIdentification, saveableComponents[i].identifier));
-                saveableComponentObjects.Add(saveableComponents[i].monoBehaviour as ISaveable);
+                saveableComponentIDs.Add(string.Format("{0}-{1}", saveIdentification, cachedSaveableComponents[i].identifier));
+                saveableComponentObjects.Add(cachedSaveableComponents[i].monoBehaviour as ISaveable);
             }
 
             if (!manualSaveLoad)
@@ -269,7 +272,9 @@ namespace Lowscope.Saving.Components
         }
 
         /// <summary>
-        /// Removes all save data related to this component
+        /// Removes all save data related to this component.
+        /// This is useful for dynamic saved objects. So they get erased
+        /// from the save file permanently.
         /// </summary>
         public void WipeData()
         {
@@ -281,6 +286,10 @@ namespace Lowscope.Saving.Components
                 {
                     cachedSaveGame.Remove(saveableComponentIDs[i]);
                 }
+
+                // Ensures it doesn't try to save upon destruction.
+                manualSaveLoad = true;
+                SaveMaster.RemoveListener(this, false);
             }
         }
 
@@ -363,7 +372,7 @@ namespace Lowscope.Saving.Components
 
                 if (getSaveable == null)
                 {
-                    Debug.Log(string.Format("Failed to save component: {0}. Component is potentially destroyed.", getIdentification));
+                    Debug.Log(string.Format("Failed to load component: {0}. Component is potentially destroyed.", getIdentification));
                     saveableComponentIDs.RemoveAt(i);
                     saveableComponentObjects.RemoveAt(i);
                 }

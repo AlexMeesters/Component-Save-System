@@ -35,18 +35,15 @@ namespace Lowscope.Saving
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void CreateInstance()
         {
-            if (SaveSettings.Get().autoInitializeSaveMaster)
-            {
-                GameObject saveMasterObject = new GameObject("Save Master");
-                instance = saveMasterObject.AddComponent<SaveMaster>();
+            GameObject saveMasterObject = new GameObject("Save Master");
+            instance = saveMasterObject.AddComponent<SaveMaster>();
 
-                saveInstanceManagers = new Dictionary<string, SaveInstanceManager>();
+            saveInstanceManagers = new Dictionary<string, SaveInstanceManager>();
 
-                SceneManager.sceneLoaded += OnSceneLoaded;
-                SceneManager.sceneUnloaded += OnSceneUnloaded;
+            SceneManager.sceneLoaded += OnSceneLoaded;
+            SceneManager.sceneUnloaded += OnSceneUnloaded;
 
-                GameObject.DontDestroyOnLoad(saveMasterObject);
-            }
+            GameObject.DontDestroyOnLoad(saveMasterObject);
         }
 
         /*  
@@ -121,6 +118,16 @@ namespace Lowscope.Saving
             return SaveFileUtility.GetAvailableSaveSlot() != -1;
         }
 
+        public static int[] GetUsedSlots()
+        {
+            return SaveFileUtility.GetUsedSlots();
+        }
+
+        public static bool IsSlotUsed(int slot)
+        {
+            return SaveFileUtility.IsSlotUsed(slot);
+        }
+
         /// <summary>
         /// Tries to set the current slot to the last used one.
         /// </summary>
@@ -147,7 +154,7 @@ namespace Lowscope.Saving
         /// <param name="notifyListeners"></param>
         /// <param name="slot"></param>
         /// <returns></returns>
-        public static bool SetSlotToFirstUnused(bool notifyListeners, out int slot)
+        public static bool SetSlotToNewSlot(bool notifyListeners, out int slot)
         {
             int availableSlot = SaveFileUtility.GetAvailableSaveSlot();
 
@@ -165,20 +172,29 @@ namespace Lowscope.Saving
         }
 
         /// <summary>
+        /// Ensure save master has not been set to any slot
+        /// </summary>
+        public static void ClearSlot()
+        {
+            activeSlot = -1;
+            activeSaveGame = null;
+        }
+
+        /// <summary>
         /// Set the active save slot
         /// </summary>
         /// <param name="slot"> Target save slot </param>
         /// <param name="notifyListeners"> Send a message to all saveables to load the new save file </param>
         public static void SetSlot(int slot, bool notifyListeners, SaveGame saveGame = null)
         {
-            if (activeSlot == slot)
+            if (activeSlot == slot && saveGame == null)
             {
                 Debug.LogWarning("Already loaded this slot.");
                 return;
             }
 
             // Ensure the current game is saved, and write it to disk, if that is wanted behaviour.
-            if (SaveSettings.Get().autoSave && SaveSettings.Get().autoSaveOnSlotSwitch && activeSaveGame != null)
+            if (SaveSettings.Get().autoSaveOnSlotSwitch && activeSaveGame != null)
             {
                 WriteActiveSaveToDisk();
             }
@@ -215,6 +231,11 @@ namespace Lowscope.Saving
             return GetSave(slot, true).creationDate;
         }
 
+        public static DateTime GetSaveCreationTime()
+        {
+            return GetSaveCreationTime(activeSlot);
+        }
+
         public static TimeSpan GetSaveTimePlayed(int slot)
         {
             if (slot == activeSlot)
@@ -228,6 +249,11 @@ namespace Lowscope.Saving
             }
 
             return GetSave(slot, true).timePlayed;
+        }
+
+        public static TimeSpan GetSaveTimePlayed()
+        {
+            return GetSaveTimePlayed(activeSlot);
         }
 
         public static int GetSaveVersion(int slot)
@@ -245,9 +271,9 @@ namespace Lowscope.Saving
             return GetSave(slot, true).gameVersion;
         }
 
-        public static int[] GetUsedSlots()
+        public static int GetSaveVersion()
         {
-            return SaveFileUtility.GetUsedSlots();
+            return GetSaveVersion(activeSlot);
         }
 
         private static SaveGame GetSave(int slot, bool createIfEmpty = true)
@@ -258,11 +284,6 @@ namespace Lowscope.Saving
             }
 
             return SaveFileUtility.LoadSave(slot, createIfEmpty);
-        }
-
-        public static bool IsSlotUsed(int slot)
-        {
-            return SaveFileUtility.IsSlotUsed(slot);
         }
 
         /// <summary>
@@ -290,8 +311,27 @@ namespace Lowscope.Saving
         }
 
         /// <summary>
+        /// Clears all saveable components that are listening to the Save Master
+        /// </summary>
+        /// <param name="notifySave"></param>
+        public static void ClearListeners(bool notifySave)
+        {
+            if (notifySave && activeSaveGame != null)
+            {
+                int saveableCount = saveables.Count;
+                for (int i = saveableCount - 1; i >= 0; i--)
+                {
+                    saveables[i].OnSaveRequest(activeSaveGame);
+                }
+            }
+
+            saveables.Clear();
+        }
+
+        /// <summary>
         /// Add saveable from the notification list. So it can recieve load/save requests.
         /// </summary>
+        /// <param name="saveable"> Reference to the saveable that listens to the Save Master </param>
         public static void AddListener(Saveable saveable)
         {
             if (saveable != null && activeSaveGame != null)
@@ -303,16 +343,51 @@ namespace Lowscope.Saving
         }
 
         /// <summary>
+        /// Add saveable from the notification list. So it can recieve load/save requests.
+        /// </summary>
+        /// <param name="saveable"> Reference to the saveable that listens to the Save Master </param>
+        public static void AddListener(Saveable saveable, bool loadData)
+        {
+            if (loadData)
+            {
+                AddListener(saveable);
+            }
+            else
+            {
+                saveables.Add(saveable);
+            }
+        }
+
+        /// <summary>
         /// Remove saveable from the notification list. So it no longers recieves load/save requests.
         /// </summary>
+        /// <param name="saveable"> Reference to the saveable that listens to the Save Master </param>
         public static void RemoveListener(Saveable saveable)
         {
-            if (saveable != null && activeSaveGame != null)
+            if (saveables.Remove(saveable))
             {
-                saveable.OnSaveRequest(activeSaveGame);
+                if (saveable != null && activeSaveGame != null)
+                {
+                    saveable.OnSaveRequest(activeSaveGame);
+                }
             }
+        }
 
-            saveables.Remove(saveable);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="saveable"> Reference to the saveable that listens to the Save Master </param>
+        /// <param name="saveData"> Should it try to save the saveable data to the save file when being removed? </param>
+        public static void RemoveListener(Saveable saveable, bool saveData)
+        {
+            if (saveData)
+            {
+                RemoveListener(saveable);
+            }
+            else
+            {
+                saveables.Remove(saveable);
+            }
         }
 
         /// <summary>
@@ -327,19 +402,15 @@ namespace Lowscope.Saving
             {
                 activeSlot = -1;
                 activeSaveGame = null;
-                saveables.Clear();
             }
         }
 
         /// <summary>
         /// Removes the active save file. Based on the save slot index.
         /// </summary>
-        public static void DeleteActiveSaveGame()
+        public static void DeleteSave()
         {
-            SaveFileUtility.DeleteSave(activeSlot);
-            activeSlot = -1;
-            activeSaveGame = null;
-            saveables.Clear();
+            DeleteSave(activeSlot);
         }
 
         /// <summary>
@@ -382,6 +453,12 @@ namespace Lowscope.Saving
             }
         }
 
+        public static GameObject SpawnSavedPrefab(InstanceSource source, string filePath)
+        {
+            return HasActiveSave("Spawning Object") == false ?
+                null : saveInstanceManager.SpawnObject(source, filePath);
+        }
+
         /// <summary>
         /// Helper method for obtaining specific Saveable data.
         /// </summary>
@@ -408,7 +485,7 @@ namespace Lowscope.Saving
                 return false;
             }
 
-            string dataString = saveGame.Get(string.Format("{0}-{1}", saveableId , componentId));
+            string dataString = saveGame.Get(string.Format("{0}-{1}", saveableId, componentId));
 
             if (!string.IsNullOrEmpty(dataString))
             {
@@ -422,10 +499,24 @@ namespace Lowscope.Saving
             return false;
         }
 
-        public static GameObject SpawnObject(InstanceSource source, string filePath)
+        /// <summary>
+        /// Helper method for obtaining specific Saveable data.
+        /// </summary>
+        /// <typeparam name="T"> Object type to retrieve </typeparam>
+        /// <param name="classType">Object type to retrieve</param>
+        /// <param name="saveableId"> Identification of saveable </param>
+        /// <param name="componentId"> Identification of saveable component </param>
+        /// <param name="data"> Data that gets returned </param>
+        /// <returns></returns>
+        public static bool GetSaveableData<T>(string saveableId, string componentId, out T data)
         {
-            return HasActiveSave("Spawning Object") == false ?
-                null : saveInstanceManager.SpawnObject(source, filePath);
+            if (activeSlot == -1)
+            {
+                data = default(T);
+                return false;
+            }
+
+            return GetSaveableData<T>(activeSlot, saveableId, componentId, out data);
         }
 
         /// <summary>
@@ -520,10 +611,7 @@ namespace Lowscope.Saving
                 GameObject.Destroy(this.gameObject);
                 return;
             }
-        }
 
-        private void Start()
-        {
             var settings = SaveSettings.Get();
 
             if (settings.loadDefaultSlotOnStart)
@@ -538,11 +626,11 @@ namespace Lowscope.Saving
 
             if (settings.useHotkeys)
             {
-                StartCoroutine(TrackOpenSlotMenu());
+                StartCoroutine(TrackHotkeyUsage());
             }
         }
 
-        private IEnumerator TrackOpenSlotMenu()
+        private IEnumerator TrackHotkeyUsage()
         {
             var settings = SaveSettings.Get();
 
@@ -608,7 +696,7 @@ namespace Lowscope.Saving
         // This will get called on android devices when they leave the game
         private void OnApplicationPause(bool pause)
         {
-            if (!SaveSettings.Get().autoSave)
+            if (!SaveSettings.Get().autoSaveOnExit)
                 return;
 
             WriteActiveSaveToDisk();
@@ -616,7 +704,7 @@ namespace Lowscope.Saving
 
         private void OnApplicationQuit()
         {
-            if (!SaveSettings.Get().autoSave)
+            if (!SaveSettings.Get().autoSaveOnExit)
                 return;
 
             isQuittingGame = true;

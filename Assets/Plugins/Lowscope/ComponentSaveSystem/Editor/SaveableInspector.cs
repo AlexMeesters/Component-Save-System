@@ -19,7 +19,7 @@ namespace Lowscope.SaveMaster.EditorTools
             base.OnInspectorGUI();
 
             var serializedObject = new SerializedObject(targetComponent);
-            var property = serializedObject.FindProperty("saveableComponents");
+            var property = serializedObject.FindProperty("cachedSaveableComponents");
 
             SerializedProperty arraySizeProp = property.FindPropertyRelative("Array.size");
 
