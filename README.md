@@ -31,16 +31,17 @@ Here is an example of how to create your own script:
 using Lowscope.Saving;
 using UnityEngine;
 
-public class ExampleScript : MonoBehaviour, ISaveable
+public class TestScript : MonoBehaviour, ISaveable
 {
     [System.Serializable]
     public class Stats
     {
-        public string Name;
-        public int Experience;
-        public int Health;
+        public string Name = "Test Name";
+        public int Experience = 100;
+        public int Health = 50;
     }
 
+    [SerializeField]
     private Stats stats;
 
     // Gets synced from the SaveMaster
