@@ -85,6 +85,11 @@ public class ExampleScript : MonoBehaviour, ISaveable
 
 ```
 
+The guid is defined as:
+<Scene Name>-<GameObject Name>-<objectGUID>-<Script Name>-<scriptGUID>
+
+The GUIDS are used to avoid both object and script name conflicts.
+
 ## How to use
 
 When the plugin is imported, you can configure it by going to Saving/Open Save Settings in the top menu of Unity.
