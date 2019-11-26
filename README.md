@@ -69,7 +69,19 @@ public class ExampleScript : MonoBehaviour, ISaveable
 
 ```json
 
-ß{"metaData":{"gameVersion":0,"creationDate":"6/19/2019 2:16:52 AM","timePlayed":"00:00:02","lastActiveScene":"TestScene","lastAdditiveScenes":[]},"saveData":[{"guid":"TestScene-GameObject-d5f95","data":"{\"saveStructures\":[{\"identifier\":\"ExampleScript 915ce\",\"data\":\"{\\\"Name\\\":\\\"Test\\\",\\\"Experience\\\":25,\\\"Health\\\":25}\"}]}"}]}
+Ñ{
+    "metaData": {
+        "gameVersion": 0,
+        "creationDate": "11/26/2019 1:02:40 PM",
+        "timePlayed": "00:00:15"
+    },
+    "saveData": [
+        {
+            "guid": "TestScene-TestScriptGameobject-d4dbf-TestScriptOne-0ea15",
+            "data": "{\"Name\":\"My Name\",\"Experience\":25,\"Health\":25}"
+        }
+    ]
+}
 
 ```
 
