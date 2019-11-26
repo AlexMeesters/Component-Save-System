@@ -109,37 +109,48 @@ Meaning you can directly use the system.
 
 ### Most used SaveMaster methods
 ```csharp
-// Returns the active slot. -1 means no slot is loaded
-SaveMaster.GetActiveSlot() 
+// Utility
+SaveMaster.DeactivatedObjectExplicitly(GameObject gameObject) -> bool
 
-// Tries to set the current slot to the last used one.
-SaveMaster.SetSlotToLastUsedSlot(bool syncListeners) 
+// Obtaining Saveslots
+SaveMaster.GetActiveSlot() -> int
+SaveMaster.HasUnusedSlots() -> bool
+SaveMaster.GetUsedSlots() -> int[]
+SaveMaster.IsSlotUsed(int slot) -> bool
 
-// Tries to load the last used slot
-SaveMaster.LoadLastUsedSlot()
+// Setting Saveslots
+SaveMaster.SetSlotToLastUsedSlot(bool notifyListeners) -> bool
+SaveMaster.SetSlotToNewSlot(bool notifyListeners, out int slot) -> bool
+SaveMaster.SetSlot(int slot, bool notifyListeners, SaveGame saveGame = null) -> void
 
-// Attempts to set the slot to the first unused slot. Useful for creating a new game.
-SaveMaster.SetSlotToFirstUnused(bool syncListeners, out int slot)
+// Getting Data from active save or slot
+SaveMaster.GetSaveCreationTime(int slot) -> DateTime
+SaveMaster.GetSaveTimePlayed(int slot) -> TimeSpan
+SaveMaster.GetSaveVersion(int slot) -> int
 
-// Will load the last used scene for save game, and set the slot. 
-// Current scene also gets saved, if any slot is currently set. (And if AutoSaveOnSlotSwitch is on)
-// If slot is empty, it will still set it, and load the default set starting scene.
-SaveMaster.LoadSlot(int slot, string defaultScene = "")
+// Writing to disk or removing
+SaveMaster.WriteActiveSaveToDisk() -> void
+SaveMaster.DeleteSave(int slot) -> void
 
-// Set the active save slot
-SaveMaster.SetSlot(int slot, bool syncListeners)
+// Syncing and adding of saveables. (No need to use these on default settings)
+SaveMaster.AddListener(Saveable saveable) -> void
+SaveMaster.RemoveListener(Saveable saveable) -> void
+SaveMaster.SyncSave() -> void
+SaveMaster.SyncLoad() -> void
 
-// Attempts to get a SaveGame, purely for the data.
-SaveMaster.GetSave(int slot, bool createIfEmpty = true)
+// Spawning saved instances
+SaveMaster.SpawnSavedPrefab() -> GameObject
 
-//Removes the active save file. Based on the save slot index.
-SaveMaster.DeleteActiveSaveGame()
+// Get data directly without a Saveable() as intermediate.
+SaveMaster.GetSaveableData<T>(int slot, string saveableId, string componentId, out T data) -> bool
 
-// Sends notification to all subscribed Saveables to save to the SaveGame
-Savemaster.SyncSave()
-
-// Sends notification to all subscribed Saveables to load from the SaveGame
-Savemaster.LoadSave()
+// Storing variables like playerprefs.
+SaveMaster.SetInt(string key, int value) -> void
+SaveMaster.GetInt(string key, int defaultValue = -1) -> int
+SaveMaster.SetFloat(string key, float value) -> void
+SaveMaster.GetFloat(string key, float defaultValue = -1) -> float
+SaveMaster.SetString(string key, string value) -> void
+SaveMaster.GetString(string key, string defaultValue = -1) -> string
 ```
 
 ## Performance tests
