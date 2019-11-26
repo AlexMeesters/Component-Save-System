@@ -138,46 +138,26 @@ Each object contains 4 saveable components:
 * Save Scale
 * Save Visibility
 
-### Test with 1000 unique objects (4000 components, non-random positions, scale and rotations)
-
-- Sync & Write to disk : ~18 Milliseconds
-- Sync & Load from disk: ~26 Milliseconds
-- Sync Save: ~9 Milliseconds
-- Sync Load: ~15 Milliseconds
-
-* Pretty Print: 395 KB
-* Non-pretty Print: 238 KB
-
 ### Test with 1000 unique objects (4000 components, randomized positions, scale and rotations)
 
-- Sync & Write to disk : ~26 Milliseconds
-- Sync & Load from disk: ~38 Milliseconds
-- Sync Save: ~12 Milliseconds
-- Sync Load: ~21 Milliseconds
+- Sync Save: ~0.70 Milliseconds
+- Sync Load: ~3.4 Milliseconds
+- Sync & Write to disk : ~18 Milliseconds
+- Sync & Load from disk: ~23 Milliseconds
 
 * Pretty Print: 809 KB
 * Non-pretty Print: 601 KB
 
-## Performance tests (Samsung Galaxy A3, MONO)
+## Performance tests (Samsung Galaxy A3 2016, MONO)
 
 ### Test with 1000 unique objects (4000 components, Samsung Galaxy A3, MONO , Random)
 
-Initial save/loads can be a lot higher.
+Initial save/loads can be higher.
 
-- 1000 Object Sync & Write to disk : ~130 Milliseconds
-- 1000 Object Sync & Load from disk: ~167 Milliseconds
-- 1000 Object Sync Save: ~71 Milliseconds
-- 1000 Object Sync Load: ~100 Milliseconds
-
-
-### Test with 1000 unique objects (4000 components, Samsung Galaxy A3, MONO , Non-Random)
-
-Initial save/loads can be a lot higher.
-
-- 1000 Object Sync & Write to disk : ~237 Milliseconds
-- 1000 Object Sync & Load from disk: ~320 Milliseconds
-- 1000 Object Sync Save: ~130 Milliseconds
-- 1000 Object Sync Load: ~200 Milliseconds
+Sync Save: ~9 Milliseconds
+Sync Load: ~40 Milliseconds
+Sync & Write to disk : ~229 Milliseconds
+Sync & Load from disk: ~385 Milliseconds
 
 ## Credits
 
