@@ -77,7 +77,7 @@ public class TestScript : MonoBehaviour, ISaveable
     },
     "saveData": [
         {
-            "guid": "TestScene-TestScriptGameobject-d4dbf-TestScriptTwo-ac11c",
+            "guid": "TestScene-TestScriptGameobject-d4dbf-TestScript-ac11c",
             "data": "{\"Name\":\"Test Name\",\"Experience\":100,\"Health\":50}"
         }
     ]
