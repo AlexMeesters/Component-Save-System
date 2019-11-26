@@ -126,28 +126,28 @@ Savemaster.SyncSave()
 Savemaster.LoadSave()
 ```
 
-## Performance tests (I7 8700K and SSD)
+## Performance tests
 
 Keep in mind that in normal circumstances, you would not sync 4000 components at a time, unless you do it explicitly.
 This is because all components that implement ISaveable get written to the SaveGame class when the GameObject gets destroyed. 
 And eventually this SaveGame is written to Disk upon game exit/pause, slot switch or savepoint. This depends on the plugin configuration you choose to have.
 
 Each object contains 4 saveable components:
-* Save Position
-* Save Rotation
-* Save Scale
-* Save Visibility
+* Save Positionn (x,y,z)
+* Save Rotation (x,y,z)
+* Save Scale (x,y,z)
+* Save Visibility (false,true)
 
-### Test with 1000 unique objects (4000 components, randomized positions, scale and rotations)
+Tests have been done in a mono build.
+
+### Test with 1000 unique objects - I7 8700K and SSD (4000 components, randomized positions, scale and rotations)
 
 - Sync Save: ~0.70 Milliseconds
-- Sync Load: ~3.4 Milliseconds
+- Sync Load: ~2.5 Milliseconds
 - Sync & Write to disk : ~18 Milliseconds
 - Sync & Load from disk: ~23 Milliseconds
 
-## Performance tests (Samsung Galaxy A3 2016, MONO)
-
-### Test with 1000 unique objects (4000 components, Samsung Galaxy A3, MONO , Random)
+### Test with 1000 unique objects - Samsung Galaxy A3 2016 (4000 components , Random)
 
 Initial save/loads can be higher.
 
