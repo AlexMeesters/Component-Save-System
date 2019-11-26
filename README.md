@@ -145,19 +145,16 @@ Each object contains 4 saveable components:
 - Sync & Write to disk : ~18 Milliseconds
 - Sync & Load from disk: ~23 Milliseconds
 
-* Pretty Print: 809 KB
-* Non-pretty Print: 601 KB
-
 ## Performance tests (Samsung Galaxy A3 2016, MONO)
 
 ### Test with 1000 unique objects (4000 components, Samsung Galaxy A3, MONO , Random)
 
 Initial save/loads can be higher.
 
-Sync Save: ~9 Milliseconds
-Sync Load: ~40 Milliseconds
-Sync & Write to disk : ~229 Milliseconds
-Sync & Load from disk: ~385 Milliseconds
+- Sync Save: ~9 Milliseconds
+- Sync Load: ~40 Milliseconds
+- Sync & Write to disk : ~229 Milliseconds
+- Sync & Load from disk: ~385 Milliseconds
 
 ## Credits
 
