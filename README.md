@@ -128,7 +128,7 @@ SaveMaster.GetSaveCreationTime(int slot) -> DateTime
 SaveMaster.GetSaveTimePlayed(int slot) -> TimeSpan
 SaveMaster.GetSaveVersion(int slot) -> int
 
-// Writing to disk or removing
+// Writing to disk or removing (Writing happens automatically on default settings)
 SaveMaster.WriteActiveSaveToDisk() -> void
 SaveMaster.DeleteSave(int slot) -> void
 
