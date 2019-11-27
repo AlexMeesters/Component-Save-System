@@ -189,7 +189,9 @@ Initial save/loads can be higher.
 - Sync & Write to disk : ~229 Milliseconds
 - Sync & Load from disk: ~385 Milliseconds
 
-## Credits
+## Credits & Licence
+
+The plugin is MIT licenced. Read the LICENCE file.
 
 Made by me, Alex Meesters. I'm currently using it in product that I create under the company name "Lowscope".
 I've chosen to release it under the MIT licence. Which means you can use it freely in a commerical project with the condition of adding me in the credits.
