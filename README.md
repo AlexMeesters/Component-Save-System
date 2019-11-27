@@ -108,6 +108,12 @@ The SaveMaster gets instantiated before any scene loads using RunTimeInitializeO
 Meaning you can directly use the system. 
 
 ### SaveMaster methods
+
+These are all the methods of the save master. I've 
+put them into categories. In case you have a very simple game, then you may never have to
+actually call one of these methods. All methods with (int slot) in them also have a version that works
+on the current active slot.
+
 ```csharp
 // Utility
 SaveMaster.DeactivatedObjectExplicitly(GameObject gameObject) -> bool
