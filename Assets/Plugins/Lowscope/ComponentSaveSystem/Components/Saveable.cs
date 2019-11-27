@@ -24,7 +24,7 @@ namespace Lowscope.Saving.Components
         [SerializeField, Tooltip("It will scan other objects for ISaveable components")]
         private List<GameObject> externalListeners = new List<GameObject>();
 
-        [SerializeField]
+        [SerializeField, HideInInspector]
         private List<CachedSaveableComponent> cachedSaveableComponents = new List<CachedSaveableComponent>();
 
         //private Dictionary<string, ISaveable> saveableComponentDictionary = new Dictionary<string, ISaveable>();

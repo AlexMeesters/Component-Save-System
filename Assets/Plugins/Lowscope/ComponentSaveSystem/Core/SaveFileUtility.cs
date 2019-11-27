@@ -8,43 +8,7 @@ namespace Lowscope.Saving.Core
 {
     public class SaveFileUtility
     {
-#if UNITY_EDITOR
 
-        [UnityEditor.MenuItem(itemName: "Saving/Open Save Location")]
-        public static void OpenSaveLocation()
-        {
-#if UNITY_EDITOR_WIN
-            string path = Application.persistentDataPath;
-
-            path = path.Replace(@"/", @"\");   // explorer doesn't like front slashes
-            System.Diagnostics.Process.Start("explorer.exe", "/select," + path);
-
-#elif UNITY_EDITOR_OSX
-
-        string macPath = path.Replace("\\", "/"); // mac finder doesn't like backward slashes
-        bool openInsidesOfFolder = false;
-
-		if ( System.IO.Directory.Exists(macPath) ) // if path requested is a folder, automatically open insides of that folder
-		{
-			openInsidesOfFolder = true;
-		}
- 
-		if ( !macPath.StartsWith("\"") )
-		{
-			macPath = "\"" + macPath;
-		}
- 
-		if ( !macPath.EndsWith("\"") )
-		{
-			macPath = macPath + "\"";
-		}
-
-        string arguments = (openInsidesOfFolder ? "" : "-R ") + macPath;
-        System.Diagnostics.Process.Start("open", arguments);
-#endif
-        }
-
-#endif
 
         // Saving with WebGL requires a seperate DLL, which is included in the plugin.
 #if UNITY_WEBGL

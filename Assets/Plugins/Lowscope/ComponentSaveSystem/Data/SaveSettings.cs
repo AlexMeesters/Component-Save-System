@@ -127,7 +127,7 @@ namespace Lowscope.Saving.Data
 
         [Header("Extras")]
         public bool useHotkeys = false;
-        public KeyCode saveGameKey = KeyCode.F2;
+        public KeyCode saveAndWriteToDiskKey = KeyCode.F2;
         public KeyCode syncSaveGameKey = KeyCode.F4;
         public KeyCode syncLoadGameKey = KeyCode.F5;
 

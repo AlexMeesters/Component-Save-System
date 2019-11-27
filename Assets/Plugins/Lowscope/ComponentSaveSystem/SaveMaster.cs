@@ -643,7 +643,7 @@ namespace Lowscope.Saving
                     continue;
                 }
 
-                if (Input.GetKeyDown(settings.saveGameKey))
+                if (Input.GetKeyDown(settings.saveAndWriteToDiskKey))
                 {
                     var stopWatch = new System.Diagnostics.Stopwatch();
                     stopWatch.Start();
