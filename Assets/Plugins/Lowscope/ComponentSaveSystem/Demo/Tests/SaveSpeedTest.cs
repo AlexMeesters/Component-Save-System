@@ -6,16 +6,16 @@ namespace Lowscope.Saving.Demo
 {
     public class SaveSpeedTest : MonoBehaviour
     {
-        [SerializeField] private Button buttonTestSyncSave;
-        [SerializeField] private Button buttonTestSyncLoad;
-        [SerializeField] private Button buttonTestSyncSaveWrite;
-        [SerializeField] private Button buttonTestSyncSaveLoad;
-        [SerializeField] private Button buttonRandomizeTransforms;
-        [SerializeField] private Button buttonWipeAllSaveablesData;
-        [SerializeField] private Button buttonWipeSave;
-        [SerializeField] private Text displayText;
+        [SerializeField] private Button buttonTestSyncSave = null;
+        [SerializeField] private Button buttonTestSyncLoad = null;
+        [SerializeField] private Button buttonTestSyncSaveWrite = null;
+        [SerializeField] private Button buttonTestSyncSaveLoad = null;
+        [SerializeField] private Button buttonRandomizeTransforms = null;
+        [SerializeField] private Button buttonWipeAllSaveablesData = null;
+        [SerializeField] private Button buttonWipeSave = null;
+        [SerializeField] private Text displayText = null;
 
-        [SerializeField] private GameObject saveablesContainer;
+        [SerializeField] private GameObject saveablesContainer = null;
         private Saveable[] saveables;
 
         // For scene reload

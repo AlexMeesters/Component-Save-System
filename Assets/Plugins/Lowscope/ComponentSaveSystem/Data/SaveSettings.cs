@@ -120,6 +120,12 @@ namespace Lowscope.Saving.Data
         [Tooltip("Should the game get saved when switching between game saves?")]
         public bool autoSaveOnSlotSwitch = true;
 
+        [Header("Saveable")]
+        [Tooltip("Will do a check if object has already been instantiated with the ID")]
+        public bool resetSaveableIdOnDuplicate = true;
+        [Tooltip("Will do a check if object is serialized under a different scene name")]
+        public bool resetSaveableIdOnNewScene = true;
+
         [Header("Initialization")]
         public bool loadDefaultSlotOnStart = true;
         [Range(0, 299)]
@@ -130,6 +136,7 @@ namespace Lowscope.Saving.Data
         public KeyCode saveAndWriteToDiskKey = KeyCode.F2;
         public KeyCode syncSaveGameKey = KeyCode.F4;
         public KeyCode syncLoadGameKey = KeyCode.F5;
+        public KeyCode wipeActiveSceneData = KeyCode.F6;
 
         [Header("Debug (Unity Editor Only)")]
         public bool showSaveFileUtilityLog = false;

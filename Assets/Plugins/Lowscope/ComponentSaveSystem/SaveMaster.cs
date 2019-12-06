@@ -311,6 +311,35 @@ namespace Lowscope.Saving
         }
 
         /// <summary>
+        /// Wipe all data of a specified scene
+        /// </summary>
+        /// <param name="name"> Name of the scene </param>
+        /// <param name="clearSceneSaveables"> Scan and wipe for any saveable in the scene? Else they might save again upon destruction.
+        /// You can leave this off for performance if you are certain no active saveables are in the scene.</param>
+        public static void WipeSceneData(string name, bool clearSceneSaveables = true)
+        {
+            if (activeSaveGame == null)
+            {
+                Debug.LogError("Failed to wipe scene data: No save game loaded.");
+                return;
+            }
+
+            if (clearSceneSaveables)
+            {
+                int listenerCount = saveables.Count;
+                for (int i = listenerCount - 1; i >= 0; i--)
+                {
+                    if (saveables[i].gameObject.scene.name == name)
+                    {
+                        saveables[i].WipeData();
+                    }
+                }
+            }
+
+            activeSaveGame.WipeSceneData(name);
+        }
+
+        /// <summary>
         /// Clears all saveable components that are listening to the Save Master
         /// </summary>
         /// <param name="notifySave"></param>
@@ -527,7 +556,7 @@ namespace Lowscope.Saving
         public static void SetInt(string key, int value)
         {
             if (HasActiveSave("Set Int") == false) return;
-            activeSaveGame.Set(string.Format("IVar-{0}", key), value.ToString());
+            activeSaveGame.Set(string.Format("IVar-{0}", key), value.ToString(), "Global");
         }
 
         /// <summary>
@@ -551,7 +580,7 @@ namespace Lowscope.Saving
         public static void SetFloat(string key, float value)
         {
             if (HasActiveSave("Set Float") == false) return;
-            activeSaveGame.Set(string.Format("FVar-{0}", key), value.ToString());
+            activeSaveGame.Set(string.Format("FVar-{0}", key), value.ToString(), "Global");
         }
 
         /// <summary>
@@ -575,7 +604,7 @@ namespace Lowscope.Saving
         public static void SetString(string key, string value)
         {
             if (HasActiveSave("Set String") == false) return;
-            activeSaveGame.Set(string.Format("SVar-{0}", key), value);
+            activeSaveGame.Set(string.Format("SVar-{0}", key), value, "Global");
         }
 
         /// <summary>
@@ -641,6 +670,11 @@ namespace Lowscope.Saving
                 if (!settings.useHotkeys)
                 {
                     continue;
+                }
+
+                if (Input.GetKeyDown(settings.wipeActiveSceneData))
+                {
+                    SaveMaster.WipeSceneData(SceneManager.GetActiveScene().name);
                 }
 
                 if (Input.GetKeyDown(settings.saveAndWriteToDiskKey))

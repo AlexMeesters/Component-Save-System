@@ -25,6 +25,7 @@ namespace Lowscope.Saving.Data
         {
             public string guid;
             public string data;
+            public string scene;
         }
 
         [NonSerialized] public TimeSpan timePlayed;
@@ -40,6 +41,10 @@ namespace Lowscope.Saving.Data
 
         [NonSerialized] private bool loaded;
 
+        // Used to track which save ids are assigned to a specific scene
+        // This makes it posible to wipe all data from a specific scene.
+        [NonSerialized] private Dictionary<string, List<string>> sceneObjectIDS = new Dictionary<string, List<string>>();
+
         public void OnWrite()
         {
             if (creationDate == default(DateTime))
@@ -50,8 +55,6 @@ namespace Lowscope.Saving.Data
             metaData.creationDate = creationDate.ToString();
             metaData.gameVersion = gameVersion;
             metaData.timePlayed = timePlayed.ToString();
-
-            int sceneCount = SceneManager.sceneCount;
         }
 
         public void OnLoad()
@@ -74,7 +77,25 @@ namespace Lowscope.Saving.Data
                 for (int i = 0; i < saveData.Count; i++)
                 {
                     saveDataCache.Add(saveData[i].guid, i);
+                    AddSceneID(saveData[i].scene, saveData[i].guid);
                 }
+            }
+        }
+
+        public void WipeSceneData(string sceneName)
+        {
+            if (sceneObjectIDS.TryGetValue(sceneName, out List<string> value))
+            {
+                int elementCount = value.Count;
+                for (int i = elementCount - 1; i >= 0; i--)
+                {
+                    Remove(value[i]);
+                    value.RemoveAt(i);
+                }
+            }
+            else
+            {
+                Debug.Log("Scene is already wiped!");
             }
         }
 
@@ -87,6 +108,7 @@ namespace Lowscope.Saving.Data
                 // Zero out the string data, it will be wiped on next cache initialization.
                 saveData[saveIndex] = new Data();
                 saveDataCache.Remove(id);
+                sceneObjectIDS.Remove(id);
             }
         }
 
@@ -95,20 +117,21 @@ namespace Lowscope.Saving.Data
         /// </summary>
         /// <param name="id"> Save Identification </param>
         /// <param name="data"> Data in a string format </param>
-        public void Set(string id, string data)
+        public void Set(string id, string data, string scene)
         {
             int saveIndex;
 
             if (saveDataCache.TryGetValue(id, out saveIndex))
             {
-                saveData[saveIndex] = new Data() {guid = id, data = data};
+                saveData[saveIndex] = new Data() { guid = id, data = data, scene = scene };
             }
             else
             {
-                Data newSaveData = new Data() {guid = id, data = data};
+                Data newSaveData = new Data() { guid = id, data = data, scene = scene };
 
                 saveData.Add(newSaveData);
                 saveDataCache.Add(id, saveData.Count - 1);
+                AddSceneID(scene, id);
             }
         }
 
@@ -128,6 +151,26 @@ namespace Lowscope.Saving.Data
             else
             {
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// Adds the index to a list that is identifyable by scene
+        /// Makes it easy to remove save data related to a scene name.
+        /// </summary>
+        /// <param name="scene"></param>
+        /// <param name="index"></param>
+        private void AddSceneID(string scene, string id)
+        {
+            if (sceneObjectIDS.TryGetValue(scene, out List<string> value))
+            {
+                value.Add(id);
+            }
+            else
+            {
+                List<string> list = new List<string>();
+                list.Add(id);
+                sceneObjectIDS.Add(scene, list);
             }
         }
     }
