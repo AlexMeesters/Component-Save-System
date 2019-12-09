@@ -147,7 +147,7 @@ SaveMaster.SyncSave() -> void
 SaveMaster.SyncLoad() -> void
 
 // Spawning saved instances
-SaveMaster.SpawnSavedPrefab() -> GameObject
+SaveMaster.SpawnSavedPrefab(InstanceSource source, string filePath) -> GameObject
 
 // Get data directly without a Saveable() as intermediate.
 SaveMaster.GetSaveableData<T>(int slot, string saveableId, string componentId, out T data) -> bool
