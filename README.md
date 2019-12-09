@@ -203,4 +203,4 @@ I've chosen to release it under the MIT licence. Which means you can use it free
 This system was primarily made and designed for the [RPG Farming Kit](https://assetstore.unity.com/packages/templates/packs/rpg-farming-kit-121080?aid=1101lHUQ). After a lot of iterations it became more generalized since I also needed a save system in other projects.
 All the code & design of it was done by me. Any constructive criticism/feedback on it is appreciated!
 
-In case you want to support me, please consider buying [Health Pro](https://assetstore.unity.com/packages/tools/utilities/health-pro-effects-132006?aid=1101lHUQ) or [RPG Farming Kit](https://assetstore.unity.com/packages/templates/packs/rpg-farming-kit-121080?aid=1101lHUQ). Or by purchasing [Hyperplex 3D](https://store.steampowered.com/app/1124950/Hyperplex_3D/) on Steam.
+In case you want to support me, please consider buying [Health Pro](https://assetstore.unity.com/packages/tools/utilities/health-pro-effects-132006?aid=1101lHUQ) or [RPG Farming Kit](https://assetstore.unity.com/packages/templates/packs/rpg-farming-kit-121080?aid=1101lHUQ).
