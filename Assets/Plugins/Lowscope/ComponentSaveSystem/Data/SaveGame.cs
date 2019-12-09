@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace Lowscope.Saving.Data
 {
@@ -84,7 +83,8 @@ namespace Lowscope.Saving.Data
 
         public void WipeSceneData(string sceneName)
         {
-            if (sceneObjectIDS.TryGetValue(sceneName, out List<string> value))
+            List<string> value;
+            if (sceneObjectIDS.TryGetValue(sceneName, out value))
             {
                 int elementCount = value.Count;
                 for (int i = elementCount - 1; i >= 0; i--)
@@ -162,7 +162,8 @@ namespace Lowscope.Saving.Data
         /// <param name="index"></param>
         private void AddSceneID(string scene, string id)
         {
-            if (sceneObjectIDS.TryGetValue(scene, out List<string> value))
+            List<string> value;
+            if (sceneObjectIDS.TryGetValue(scene, out value))
             {
                 value.Add(id);
             }
