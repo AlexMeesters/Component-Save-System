@@ -140,7 +140,11 @@ SaveMaster.GetSaveVersion(int slot) -> int
 SaveMaster.WriteActiveSaveToDisk() -> void
 SaveMaster.DeleteSave(int slot) -> void
 
+// Wiping savedata from scenes
+SaveMaster.WipeSceneData(string name, bool clearSceneSaveables = true) -> void
+
 // Syncing and adding of saveables. (No need to use these on default settings)
+SaveMaster.ClearListeners(bool notifySave) -> void
 SaveMaster.AddListener(Saveable saveable) -> void
 SaveMaster.RemoveListener(Saveable saveable) -> void
 SaveMaster.SyncSave() -> void
