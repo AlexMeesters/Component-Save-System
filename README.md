@@ -163,6 +163,9 @@ SaveMaster.GetString(string key, string defaultValue = -1) -> string
 
 ## Performance tests
 
+### Performance may differ from this, just take it as an indication.
+### The code is still getting updated from time to time.
+
 Keep in mind that in normal circumstances, you would not sync 4000 components at a time, unless you do it explicitly.
 This is because all components that implement ISaveable get written to the SaveGame class when the GameObject gets destroyed. 
 And eventually this SaveGame is written to Disk upon game exit/pause, slot switch or savepoint. This depends on the plugin configuration you choose to have.
