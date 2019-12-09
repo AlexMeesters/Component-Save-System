@@ -3,7 +3,7 @@ Save system that is developed to co-exist with the current component system of U
 
 Introduction video of how to use the plugin.
 
-[![IMAGE ALT TEXT](http://img.youtube.com/vi/2jfLTmDKTg8/0.jpg)](https://www.youtube.com/watch?v=2jfLTmDKTg8)
+[![IMAGE ALT TEXT](http://img.youtube.com/vi/2jfLTmDKTg8/1.jpg)](https://www.youtube.com/watch?v=2jfLTmDKTg8)
 
 ## Another save system for Unity?
 How this solution differs from others is that you only have to write a save implementation per component (script).
