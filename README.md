@@ -195,9 +195,12 @@ Initial save/loads can be higher.
 
 ## What is still missing?
 
-* Encryption
+* Metadata files for the saves, making it less expensive to read
+basic data like creation date and time played.
+* Encryption of save files
+* Data corruption prevention measures
 * Tracking of edit history, in order to remove bloat from existing
-save files.
+save files. (May be overengineering tough)
 * Potentially more fixes & features that are needed eventually.
 
 
