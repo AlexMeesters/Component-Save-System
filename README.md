@@ -163,7 +163,7 @@ SaveMaster.GetString(string key, string defaultValue = -1) -> string
 
 ## Performance tests
 
-### Performance may differ from this, just take it as an indication. The code is still getting updated from time to time.
+### The code is still getting updated from time to time, so performance may differ from this.
 
 Keep in mind that in normal circumstances, you would not sync 4000 components at a time, unless you do it explicitly.
 This is because all components that implement ISaveable get written to the SaveGame class when the GameObject gets destroyed. 
