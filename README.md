@@ -193,6 +193,14 @@ Initial save/loads can be higher.
 - Sync & Write to disk : ~229 Milliseconds
 - Sync & Load from disk: ~385 Milliseconds
 
+## What is still missing?
+
+* Encryption
+* Tracking of edit history, in order to remove bloat from existing
+save files.
+* Potentially more fixes & features that are needed eventually.
+
+
 ## Credits & Licence
 
 The plugin is MIT licenced. Read the LICENCE file.
