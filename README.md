@@ -16,7 +16,7 @@ This is useful in case you want to be able to easily save the state of multiple 
 
 ![Save architectue](https://github.com/AlexMeesters/ComponentSaveSystem/blob/master/Images/savearchitecture.jpg)
 
-You can find more about the image above on the blog post on the ![Lowscope website](https://low-scope.com/unity-plugin-free-save-system).
+You can find more about the image above in [this blogpost](https://low-scope.com/unity-plugin-free-save-system).
 
 ## How does it work in practice?
 
