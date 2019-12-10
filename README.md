@@ -1,5 +1,5 @@
 # Unity Component Save System
-Save system that is developed to co-exist with the current component system of Unity.
+A free save system that is developed to co-exist with the current component system of Unity.
 
 Introduction video of how to use the plugin.
 
@@ -15,6 +15,8 @@ This is useful in case you want to be able to easily save the state of multiple 
 ## How does it work?
 
 ![Save architectue](https://github.com/AlexMeesters/ComponentSaveSystem/blob/master/Images/savearchitecture.jpg)
+
+You can find more about the image above in [this blogpost](https://low-scope.com/unity-plugin-free-save-system).
 
 ## How does it work in practice?
 
@@ -147,7 +149,7 @@ SaveMaster.SyncSave() -> void
 SaveMaster.SyncLoad() -> void
 
 // Spawning saved instances
-SaveMaster.SpawnSavedPrefab() -> GameObject
+SaveMaster.SpawnSavedPrefab(InstanceSource source, string filePath) -> GameObject
 
 // Get data directly without a Saveable() as intermediate.
 SaveMaster.GetSaveableData<T>(int slot, string saveableId, string componentId, out T data) -> bool
