@@ -124,7 +124,7 @@ namespace Lowscope.Saving.Data
         [Tooltip("Will do a check if object has already been instantiated with the ID")]
         public bool resetSaveableIdOnDuplicate = true;
         [Tooltip("Will do a check if object is serialized under a different scene name")]
-        public bool resetSaveableIdOnNewScene = true;
+        public bool resetSaveableIdOnNewScene = false;
 
         [Header("Initialization")]
         public bool loadDefaultSlotOnStart = true;
