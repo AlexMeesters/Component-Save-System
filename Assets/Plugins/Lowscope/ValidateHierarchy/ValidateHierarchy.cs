@@ -1,21 +1,26 @@
-
-// Copyright notice - Licence: MIT. https://opensource.org/licenses/MIT
-// Provided by Alex Meesters. www.alexmeesters.nl. Used within low-scope.com products.
-
 /*
+
+Copyright notice - Licence: MIT. https://opensource.org/licenses/MIT
+Provided by Alex Meesters. www.alexmeesters.nl. Used within low-scope.com products.
+Source: https://github.com/AlexMeesters/UnityValidateHierarchy
+
 --- HOW TO USE? ---
 On the component that you want have validation for:
 Within the OnValidate method add: ValidateHierarchy.Add(this)
 Within the OnDestroy method add: ValidateHierarchy.Remove(this)
 
 Please note that the OnValidate method must be public. Else it won't work.
-Cheers!
+Cheers! All the defines are added to prevent any building errors.
+
 */
 
-# if UNITY_EDITOR
 
 using UnityEngine;
+
+# if UNITY_EDITOR
 using UnityEditor;
+#endif
+
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -23,16 +28,25 @@ namespace Lowscope.Tools
 {
     // This solution was required because there is no way to properly check if entire gameobject hierarchies are dirty.
     // This will do callbacks for subscribed objects when a property of an object with the same root GameObject has been modified.
+#if UNITY_EDITOR
     [InitializeOnLoad]
+#endif
     public class ValidateHierarchy
     {
+#if UNITY_EDITOR
         static ValidateHierarchy()
         {
             Undo.postprocessModifications += OnPostProcessModifications;
+
+#if UNITY_2018_1_OR_NEWER
+            EditorApplication.hierarchyChanged += OnHierarchyChanged;
+#else
             EditorApplication.hierarchyWindowChanged += OnHierarchyChanged;
+#endif
             EditorApplication.playModeStateChanged += OnPlayModeChanged;
             Selection.selectionChanged += LastSelection;
         }
+
 
         private static Transform lastRoot;
 
@@ -60,8 +74,10 @@ namespace Lowscope.Tools
         // Transform is the root object
         private static Dictionary<Transform, HashSet<MonoBehaviour>> validateableMonobehaviours = new Dictionary<Transform, HashSet<MonoBehaviour>>();
 
+#endif
         public static void Remove(MonoBehaviour monoBehaviour)
         {
+#if UNITY_EDITOR
             if (Application.isPlaying)
                 return;
 
@@ -76,21 +92,24 @@ namespace Lowscope.Tools
                     validateableMonobehaviours[monoBehaviour.transform.root].Remove(monoBehaviour);
                 }
             }
+#endif
         }
 
         public static void Add(MonoBehaviour monoBehaviour)
         {
+#if UNITY_EDITOR
             // Check for prefabs, we don't want to add those.
 
             bool isPrefab = false;
 #if UNITY_2018_3_OR_NEWER
-            isPrefab = PrefabUtility.IsPartOfPrefabAsset(monoBehaviour.gameObject);
+            isPrefab = PrefabUtility.GetCorrespondingObjectFromSource(monoBehaviour.gameObject) == null && PrefabUtility.GetPrefabInstanceHandle(monoBehaviour.gameObject) != null;
+#elif UNITY_2018_1_OR_NEWER
+            isPrefab = PrefabUtility.GetCorrespondingObjectFromSource(monoBehaviour.gameObject) == null && PrefabUtility.GetPrefabObject(monoBehaviour.gameObject) != null;
 #else
-            isPrefab = monoBehaviour.gameObject.scene.name == null;
+            isPrefab = PrefabUtility.GetPrefabParent(monoBehaviour.gameObject) == null && PrefabUtility.GetPrefabObject(monoBehaviour.gameObject) != null;
 #endif
             if (isPrefab)
                 return;
-
 
             if (!validateableMonobehaviours.ContainsKey(monoBehaviour.transform.root))
             {
@@ -103,8 +122,9 @@ namespace Lowscope.Tools
                     validateableMonobehaviours[monoBehaviour.transform.root].Add(monoBehaviour);
                 }
             }
+#endif
         }
-
+#if UNITY_EDITOR
         // In case anything in the transform hierachy changes we want to check what object has been modified
         private static void OnHierarchyChanged()
         {
@@ -174,8 +194,7 @@ namespace Lowscope.Tools
                 }
             }
         }
+#endif
     }
 
 }
-
-#endif
