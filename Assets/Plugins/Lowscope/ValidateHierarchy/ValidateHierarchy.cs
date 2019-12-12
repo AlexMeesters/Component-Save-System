@@ -1,5 +1,5 @@
 /*
-
+ * 
 Copyright notice - Licence: MIT. https://opensource.org/licenses/MIT
 Provided by Alex Meesters. www.alexmeesters.nl. Used within low-scope.com products.
 Source: https://github.com/AlexMeesters/UnityValidateHierarchy
@@ -11,7 +11,6 @@ Within the OnDestroy method add: ValidateHierarchy.Remove(this)
 
 Please note that the OnValidate method must be public. Else it won't work.
 Cheers! All the defines are added to prevent any building errors.
-
 */
 
 
@@ -83,13 +82,11 @@ namespace Lowscope.Tools
 
             if (validateableMonobehaviours.ContainsKey(monoBehaviour.transform.root))
             {
-                if (validateableMonobehaviours.Count == 1)
+                validateableMonobehaviours[monoBehaviour.transform.root].Remove(monoBehaviour);
+
+                if (validateableMonobehaviours[monoBehaviour.transform.root].Count == 0)
                 {
-                    validateableMonobehaviours.Clear();
-                }
-                else
-                {
-                    validateableMonobehaviours[monoBehaviour.transform.root].Remove(monoBehaviour);
+                    validateableMonobehaviours.Remove(monoBehaviour.transform.root);
                 }
             }
 #endif
@@ -113,15 +110,10 @@ namespace Lowscope.Tools
 
             if (!validateableMonobehaviours.ContainsKey(monoBehaviour.transform.root))
             {
-                validateableMonobehaviours.Add(monoBehaviour.transform.root, new HashSet<MonoBehaviour>() { monoBehaviour });
+                validateableMonobehaviours.Add(monoBehaviour.transform.root, new HashSet<MonoBehaviour>());
             }
-            else
-            {
-                if (!validateableMonobehaviours[monoBehaviour.transform.root].Contains(monoBehaviour))
-                {
-                    validateableMonobehaviours[monoBehaviour.transform.root].Add(monoBehaviour);
-                }
-            }
+
+            validateableMonobehaviours[monoBehaviour.transform.root].Add(monoBehaviour);
 #endif
         }
 #if UNITY_EDITOR
@@ -185,10 +177,10 @@ namespace Lowscope.Tools
                     if (item != null)
                     {
                         MethodInfo tMethod = item.GetType().GetMethod("OnValidate");
+
                         if (tMethod != null)
                         {
                             tMethod.Invoke(item, null);
-                            break;
                         }
                     }
                 }
@@ -196,5 +188,4 @@ namespace Lowscope.Tools
         }
 #endif
     }
-
 }
