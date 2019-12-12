@@ -1,6 +1,6 @@
 
 <p align="center">
-  <img width="860" height="300" src="https://github.com/AlexMeesters/Component-Save-System/blob/master/Images/ComponentSaveSystem.png">
+  <img width="732" height="488" src="https://github.com/AlexMeesters/Component-Save-System/blob/master/Images/ComponentSaveSystem.png">
 </p>
 
 # Unity Component Save System
