@@ -1,4 +1,7 @@
-![Promo Picture](https://github.com/AlexMeesters/Component-Save-System/blob/master/Images/ComponentSaveSystem.png)
+
+<p align="center">
+  <img width="460" height="300" src="https://github.com/AlexMeesters/Component-Save-System/blob/master/Images/ComponentSaveSystem.png">
+</p>
 
 # Unity Component Save System
 A free save system that is developed to co-exist with the current component system of Unity.
