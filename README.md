@@ -6,7 +6,7 @@
 # Unity Component Save System
 A free save system that is developed to co-exist with the current component system of Unity.
 
-[NOW ALSO AVAILABLE ON THE UNITY ASSET STORE!](https://assetstore.unity.com/packages/tools/utilities/component-save-system-159191?aid=1101lHUQ)
+[NOW ALSO AVAILABLE ON THE UNITY ASSET STORE](https://assetstore.unity.com/packages/tools/utilities/component-save-system-159191?aid=1101lHUQ)
 
 Introduction video of how to use the plugin.
 
