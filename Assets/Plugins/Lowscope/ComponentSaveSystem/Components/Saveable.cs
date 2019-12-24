@@ -88,21 +88,15 @@ namespace Lowscope.Saving.Components
                 bool isDuplicate = false;
                 Saveable saveable = null;
 
-                if (SaveSettings.Get().resetSaveableIdOnNewScene)
-                {
-                    // Check if the previous scene still exists at all.
-                    // Not sure what the best way of doing this is yet.
-                    // Because if not, then it may be renamed.
-                    if (sceneName != gameObject.scene.name)
-                    {
-                        UnityEditor.Undo.RecordObject(this, "Updated Object Scene ID");
-                        saveIdentification = "";
-                        sceneName = gameObject.scene.name;
-                    }
-                }
-                else
+                if (sceneName != gameObject.scene.name)
                 {
                     UnityEditor.Undo.RecordObject(this, "Updated Object Scene ID");
+
+                    if (SaveSettings.Get().resetSaveableIdOnNewScene)
+                    {
+                        saveIdentification = "";
+                    }
+
                     sceneName = gameObject.scene.name;
                 }
 
@@ -142,10 +136,13 @@ namespace Lowscope.Saving.Components
                 if (string.IsNullOrEmpty(saveIdentification))
                 {
                     UnityEditor.Undo.RecordObject(this, "ClearedSaveIdentification");
+
+                    int guidLength = SaveSettings.Get().gameObjectGuidLength;
+
 #if NET_4_6
                     saveIdentification = $"{gameObject.scene.name}-{gameObject.name}-{System.Guid.NewGuid().ToString().Substring(0, 5)}";
 #else
-                    saveIdentification = string.Format("{0}-{1}-{2}", gameObject.scene.name, gameObject.name, System.Guid.NewGuid().ToString().Substring(0, 5));
+                    saveIdentification = string.Format("{0}-{1}-{2}", gameObject.scene.name, gameObject.name, System.Guid.NewGuid().ToString().Substring(0, guidLength));
 #endif
                     saveIdentificationCache.Add(saveIdentification, this);
 
@@ -215,7 +212,8 @@ namespace Lowscope.Saving.Components
 
                     while (!IsIdentifierUnique(identifier))
                     {
-                        string guidString = System.Guid.NewGuid().ToString().Substring(0, 5);
+                        int guidLength = SaveSettings.Get().componentGuidLength;
+                        string guidString = System.Guid.NewGuid().ToString().Substring(0, guidLength);
                         identifier = string.Format("{0}-{1}", typeString, guidString);
                     }
 

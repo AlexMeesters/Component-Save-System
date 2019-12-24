@@ -125,6 +125,12 @@ namespace Lowscope.Saving.Data
         public bool resetSaveableIdOnDuplicate = true;
         [Tooltip("Will do a check if object is serialized under a different scene name")]
         public bool resetSaveableIdOnNewScene = false;
+        [Tooltip("Default generated guid length for a game object")]
+        [Range(5,36)]
+        public int gameObjectGuidLength = 5;
+        [Tooltip("Default generated guid length for a component")]
+        [Range(5, 36)]
+        public int componentGuidLength = 5;
 
         [Header("Initialization")]
         public bool loadDefaultSlotOnStart = true;
