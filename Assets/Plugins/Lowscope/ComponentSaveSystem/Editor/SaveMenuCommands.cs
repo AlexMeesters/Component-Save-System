@@ -9,45 +9,24 @@ namespace Lowscope.SaveMaster.EditorTools
 {
     public class SaveMenuCommands
     {
-#if UNITY_EDITOR
-
         [UnityEditor.MenuItem(itemName: "Saving/Open Save Location")]
         public static void OpenSaveLocation()
         {
+            string dataPath = string.Format("{0}/{1}/", Application.persistentDataPath, SaveSettings.Get().fileFolderName);
+
 #if UNITY_EDITOR_WIN
-            string dataPath = string.Format("{0}/{1}", Application.persistentDataPath, SaveSettings.Get().fileFolderName);
-
-            Directory.CreateDirectory(dataPath);
-
-            string path = dataPath.Replace(@"/", @"\");   // explorer doesn't like front slashes
-            System.Diagnostics.Process.Start("explorer.exe", "/open," + path);
-
-#elif UNITY_EDITOR_OSX
-
-        string macPath = path.Replace("\\", "/"); // mac finder doesn't like backward slashes
-        bool openInsidesOfFolder = false;
-
-		if ( System.IO.Directory.Exists(macPath) ) // if path requested is a folder, automatically open insides of that folder
-		{
-			openInsidesOfFolder = true;
-		}
- 
-		if ( !macPath.StartsWith("\"") )
-		{
-			macPath = "\"" + macPath;
-		}
- 
-		if ( !macPath.EndsWith("\"") )
-		{
-			macPath = macPath + "\"";
-		}
-
-        string arguments = (openInsidesOfFolder ? "" : "-R ") + macPath;
-        System.Diagnostics.Process.Start("open", arguments);
+            dataPath = dataPath.Replace(@"/", @"\"); // Windows uses backward slashes
+#elif UNITY_EDITOR_OSX || UNITY_EDITOR_LINUX
+            dataPath = dataPath.Replace("\\", "/"); // Linux and MacOS use forward slashes
 #endif
+
+            if (!Directory.Exists(dataPath))
+            {
+                Directory.CreateDirectory(dataPath);
+            }
+
+            EditorUtility.RevealInFinder(dataPath);
         }
-
-#endif
 
         [MenuItem("Saving/Open Save Settings")]
         public static void OpenSaveSystemSettings()
