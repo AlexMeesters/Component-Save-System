@@ -18,11 +18,13 @@ namespace Lowscope.Saving.Core
         private HashSet<string> loadedIDs = new HashSet<string>();
 
         private bool isDirty;
+        private int spawnCountHistory;
 
         [System.Serializable]
         public class SaveData
         {
             public SpawnInfo[] infoCollection;
+            public int spawnCountHistory;
         }
 
         [System.Serializable]
@@ -94,7 +96,7 @@ namespace Lowscope.Saving.Core
             // Then we give it a new identification, and we store it into our spawninfo array so we know to spawn it again.
             if (string.IsNullOrEmpty(saveIdentification))
             {
-                saveable.saveIdentification = string.Format("{0}-{1}-{2}", this.gameObject.scene.name, saveable.name, spawnInfo.Count);
+                saveable.saveIdentification = string.Format("{0}-{1}-{2}", this.gameObject.scene.name, saveable.name, spawnCountHistory);
 
                 spawnInfo.Add(instance, new SpawnInfo()
                 {
@@ -102,6 +104,8 @@ namespace Lowscope.Saving.Core
                     saveIdentification = saveable.saveIdentification,
                     source = source
                 });
+
+                spawnCountHistory++;
 
                 loadedIDs.Add(saveable.saveIdentification);
             }
@@ -127,7 +131,8 @@ namespace Lowscope.Saving.Core
 
             SaveData data = new SaveData()
             {
-                infoCollection = new SpawnInfo[c]
+                infoCollection = new SpawnInfo[c],
+                spawnCountHistory = this.spawnCountHistory
             };
 
             int i = 0;
@@ -137,7 +142,7 @@ namespace Lowscope.Saving.Core
                 i++;
             }
 
-            return JsonUtility.ToJson(data, SaveSettings.Get().useJsonPrettyPrint );
+            return JsonUtility.ToJson(data, SaveSettings.Get().useJsonPrettyPrint);
         }
 
         public void OnLoad(string data)
@@ -146,6 +151,8 @@ namespace Lowscope.Saving.Core
 
             if (saveData != null && saveData.infoCollection != null)
             {
+                spawnCountHistory = saveData.spawnCountHistory;
+
                 int itemCount = saveData.infoCollection.Length;
 
                 for (int i = 0; i < itemCount; i++)
@@ -163,6 +170,23 @@ namespace Lowscope.Saving.Core
 
                     spawnInfo.Add(obj, saveData.infoCollection[i]);
                 }
+
+                // Compatibility for projects that did not save spawnCountHistory
+                // Does not get executed for newer projects
+                if (spawnCountHistory == 0 && itemCount != 0)
+                {
+                    foreach (var item in spawnInfo.Values)
+                    {
+                        string id = item.saveIdentification;
+                        int getSpawnID = int.Parse(id.Substring(id.LastIndexOf('-') + 1));
+
+                        if (getSpawnID > spawnCountHistory)
+                        {
+                            spawnCountHistory = getSpawnID + 1;
+                        }
+                    }
+                }
+
             }
         }
 
