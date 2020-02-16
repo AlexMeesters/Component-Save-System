@@ -132,6 +132,10 @@ namespace Lowscope.Saving.Data
         [Range(5, 36)]
         public int componentGuidLength = 5;
 
+        [Header("Saveable Prefabs")]
+        [Tooltip("Automatically remove saved instances when changing slots")]
+        public bool cleanSavedPrefabsOnSlotSwitch = true;
+
         [Header("Initialization")]
         public bool loadDefaultSlotOnStart = true;
         [Range(0, 299)]

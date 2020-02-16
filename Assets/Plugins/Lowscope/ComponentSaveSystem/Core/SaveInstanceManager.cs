@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Lowscope.Saving.Components;
 using Lowscope.Saving.Enums;
 using Lowscope.Saving.Data;
+using UnityEngine.SceneManagement;
 
 namespace Lowscope.Saving.Core
 {
@@ -14,11 +15,11 @@ namespace Lowscope.Saving.Core
     [DefaultExecutionOrder(-9100), AddComponentMenu("")]
     public class SaveInstanceManager : MonoBehaviour, ISaveable
     {
-        private Dictionary<GameObject, SpawnInfo> spawnInfo = new Dictionary<GameObject, SpawnInfo>();
+        private Dictionary<SavedInstance, SpawnInfo> spawnInfo = new Dictionary<SavedInstance, SpawnInfo>();
         private HashSet<string> loadedIDs = new HashSet<string>();
 
-        private bool isDirty;
         private int spawnCountHistory;
+        private int changesMade;
 
         [System.Serializable]
         public class SaveData
@@ -35,18 +36,41 @@ namespace Lowscope.Saving.Core
             public string saveIdentification;
         }
 
-        public void DestroyObject(Saveable saveable)
+        public void DestroyAllObjects()
         {
-            if (spawnInfo.ContainsKey(saveable.gameObject))
-            {
-                spawnInfo.Remove(saveable.gameObject);
-                loadedIDs.Remove(saveable.saveIdentification);
+            List<SavedInstance> instances = new List<SavedInstance>();
 
-                isDirty = true;
+            foreach (var item in spawnInfo)
+            {
+                if (item.Key != null)
+                {
+                    instances.Add(item.Key);
+                }
+            }
+
+            int totalInstanceCount = instances.Count;
+            for (int i = 0; i < totalInstanceCount; i++)
+            {
+                instances[i].Destroy();
+            }
+
+            spawnInfo.Clear();
+            loadedIDs.Clear();
+            spawnCountHistory = 0;
+        }
+
+        public void DestroyObject(SavedInstance savedInstance, Saveable saveable)
+        {
+            if (spawnInfo.ContainsKey(savedInstance))
+            {
+                spawnInfo.Remove(savedInstance);
+                loadedIDs.Remove(saveable.SaveIdentification);
+
+                changesMade++;
             }
         }
 
-        public GameObject SpawnObject(InstanceSource source, string filePath, string saveIdentification = "")
+        public SavedInstance SpawnObject(InstanceSource source, string filePath, string saveIdentification = "")
         {
             GameObject getResource = null;
 
@@ -69,12 +93,15 @@ namespace Lowscope.Saving.Core
                 return null;
             }
 
+            changesMade++;
+
             // We will temporarily set the resource to disabled. Because we don't want to enable any
             // of the components yet.
             bool resourceState = getResource.gameObject.activeSelf;
             getResource.gameObject.SetActive(false);
 
             GameObject instance = GameObject.Instantiate(getResource, getResource.transform.position, getResource.transform.rotation);
+            SceneManager.MoveGameObjectToScene(instance.gameObject, this.gameObject.scene);
 
             // After instantiating we reset the resource back to it's original state.
             getResource.gameObject.SetActive(resourceState);
@@ -96,53 +123,57 @@ namespace Lowscope.Saving.Core
             // Then we give it a new identification, and we store it into our spawninfo array so we know to spawn it again.
             if (string.IsNullOrEmpty(saveIdentification))
             {
-                saveable.saveIdentification = string.Format("{0}-{1}-{2}", this.gameObject.scene.name, saveable.name, spawnCountHistory);
+                saveable.SaveIdentification = string.Format("{0}-{1}-{2}", this.gameObject.scene.name, saveable.name, spawnCountHistory);
 
-                spawnInfo.Add(instance, new SpawnInfo()
+                spawnInfo.Add(savedInstance, new SpawnInfo()
                 {
                     filePath = filePath,
-                    saveIdentification = saveable.saveIdentification,
+                    saveIdentification = saveable.SaveIdentification,
                     source = source
                 });
 
                 spawnCountHistory++;
 
-                loadedIDs.Add(saveable.saveIdentification);
+                loadedIDs.Add(saveable.SaveIdentification);
             }
             else
             {
-                saveable.saveIdentification = saveIdentification;
-                loadedIDs.Add(saveable.saveIdentification);
+                saveable.SaveIdentification = saveIdentification;
+                loadedIDs.Add(saveable.SaveIdentification);
             }
-
-            // This action has done something to make it eligible for saving
-            isDirty = true;
 
             instance.gameObject.SetActive(true);
 
-            return instance;
+            return savedInstance;
         }
 
         public string OnSave()
         {
-            isDirty = false;
-
-            int c = spawnInfo.Count;
-
-            SaveData data = new SaveData()
+            if (changesMade > 0)
             {
-                infoCollection = new SpawnInfo[c],
-                spawnCountHistory = this.spawnCountHistory
-            };
+                changesMade = 0;
 
-            int i = 0;
-            foreach (SpawnInfo item in spawnInfo.Values)
-            {
-                data.infoCollection[i] = item;
-                i++;
+                int c = spawnInfo.Count;
+
+                SaveData data = new SaveData()
+                {
+                    infoCollection = new SpawnInfo[c],
+                    spawnCountHistory = this.spawnCountHistory
+                };
+
+                int i = 0;
+                foreach (SpawnInfo item in spawnInfo.Values)
+                {
+                    data.infoCollection[i] = item;
+                    i++;
+                }
+
+                return JsonUtility.ToJson(data, SaveSettings.Get().useJsonPrettyPrint);
             }
-
-            return JsonUtility.ToJson(data, SaveSettings.Get().useJsonPrettyPrint);
+            else
+            {
+                return "";
+            }
         }
 
         public void OnLoad(string data)
@@ -186,13 +217,12 @@ namespace Lowscope.Saving.Core
                         }
                     }
                 }
-
             }
         }
 
         public bool OnSaveCondition()
         {
-            return isDirty;
+            return true;
         }
     }
 }

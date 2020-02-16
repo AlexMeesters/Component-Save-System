@@ -100,7 +100,7 @@ namespace Lowscope.Saving.Demo
             int saveableCount = saveables.Length;
             for (int i = 0; i < saveableCount; i++)
             {
-                saveables[i].WipeData();
+                SaveMaster.WipeSaveable(saveables[i]);
             }
 
             stopWatch.Stop();

@@ -46,7 +46,7 @@ namespace Lowscope.SaveMaster.EditorTools
             {
                 foreach (Saveable item in rootObjects[i].GetComponentsInChildren<Saveable>(true))
                 {
-                    item.saveIdentification = "";
+                    item.SaveIdentification = "";
                     item.OnValidate();
                 }
             }
@@ -59,7 +59,7 @@ namespace Lowscope.SaveMaster.EditorTools
             {
                 foreach (Saveable item in obj.GetComponentsInChildren<Saveable>(true))
                 {
-                    item.saveIdentification = "";
+                    item.SaveIdentification = "";
                     item.OnValidate();
                 }
             }

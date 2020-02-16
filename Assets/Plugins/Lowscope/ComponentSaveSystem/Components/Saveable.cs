@@ -32,9 +32,23 @@ namespace Lowscope.Saving.Components
         private List<string> saveableComponentIDs = new List<string>();
         private List<ISaveable> saveableComponentObjects = new List<ISaveable>();
 
-        public string saveIdentification;
+        [SerializeField] private string saveIdentification;
+        public string SaveIdentification
+        {
+            get
+            {
+                return saveIdentification;
+            }
+            set
+            {
+                saveIdentification = value;
+                hasIdentification = !string.IsNullOrEmpty(saveIdentification);
+            }
+        }
 
         private bool hasLoaded;
+        private bool hasStateReset;
+        private bool hasIdentification;
 
         /// <summary>
         /// Means of storing all saveable components for the ISaveable component.
@@ -45,8 +59,6 @@ namespace Lowscope.Saving.Components
             public string identifier;
             public MonoBehaviour monoBehaviour;
         }
-
-        private SaveGame cachedSaveGame;
 
         public bool ManualSaveLoad
         {
@@ -265,17 +277,28 @@ namespace Lowscope.Saving.Components
 
                 AddSaveableComponent(string.Format("Dyn-{0}-{1}", mono, i.ToString()), saveables[i]);
             }
+
+            // Load it again, to ensure all ISaveable interfaces are updated.
+            SaveMaster.ReloadListener(this);
         }
 
-        public void AddSaveableComponent(string identifier, ISaveable iSaveable)
+        /// <summary>
+        /// Useful if you want to dynamically add a saveable component. To ensure it 
+        /// gets registered.
+        /// </summary>
+        /// <param name="identifier">The identifier for the component, this is the adress the data will be loaded from </param>
+        /// <param name="iSaveable">The interface reference on the component. </param>
+        /// <param name="reloadData">Do you want to reload the data on all the components? 
+        /// Only call this if you add one component. Else call SaveMaster.ReloadListener(saveable). </param>
+        public void AddSaveableComponent(string identifier, ISaveable iSaveable, bool reloadData = false)
         {
             saveableComponentIDs.Add(string.Format("{0}-{1}", saveIdentification, identifier));
             saveableComponentObjects.Add(iSaveable);
 
-            // Load it again, to ensure all ISaveable interfaces are updated.
-            if (cachedSaveGame != null)
+            if (reloadData)
             {
-                OnLoadRequest(cachedSaveGame);
+                // Load it again, to ensure all ISaveable interfaces are updated.
+                SaveMaster.ReloadListener(this);
             }
         }
 
@@ -292,6 +315,8 @@ namespace Lowscope.Saving.Components
             {
                 SaveMaster.AddListener(this);
             }
+
+            hasIdentification = !string.IsNullOrEmpty(saveIdentification);
         }
 
         private void OnDestroy()
@@ -315,32 +340,35 @@ namespace Lowscope.Saving.Components
         /// This is useful for dynamic saved objects. So they get erased
         /// from the save file permanently.
         /// </summary>
-        public void WipeData()
+        public void WipeData(SaveGame saveGame)
         {
-            if (cachedSaveGame != null)
+            int componentCount = saveableComponentIDs.Count;
+
+            for (int i = componentCount - 1; i >= 0; i--)
             {
-                int componentCount = saveableComponentIDs.Count;
-
-                for (int i = componentCount - 1; i >= 0; i--)
-                {
-                    cachedSaveGame.Remove(saveableComponentIDs[i]);
-                }
-
-                // Ensures it doesn't try to save upon destruction.
-                manualSaveLoad = true;
-                SaveMaster.RemoveListener(this, false);
+                saveGame.Remove(saveableComponentIDs[i]);
             }
+
+            // Ensures it doesn't try to save upon destruction.
+            manualSaveLoad = true;
+            SaveMaster.RemoveListener(this, false);
+        }
+
+        /// <summary>
+        /// Used to reset the saveable, as if it was never saved or loaded.
+        /// </summary>
+        public void ResetState()
+        {
+            // Since the game uses a new save game, reset loadOnce and hasLoaded
+            loadOnce = false;
+            hasLoaded = false;
+            hasStateReset = true;
         }
 
         // Request is sent by the Save System
         public void OnSaveRequest(SaveGame saveGame)
         {
-            if (cachedSaveGame != saveGame)
-            {
-                cachedSaveGame = saveGame;
-            }
-
-            if (string.IsNullOrEmpty(saveIdentification))
+            if (!hasIdentification)
             {
                 return;
             }
@@ -360,34 +388,29 @@ namespace Lowscope.Saving.Components
                 }
                 else
                 {
-                    if (getSaveable.OnSaveCondition() == false)
+                    if (!hasStateReset && !getSaveable.OnSaveCondition())
                     {
                         continue;
                     }
-                    else
+
+                    string dataString = getSaveable.OnSave();
+
+                    if (!string.IsNullOrEmpty(dataString))
                     {
-                        saveGame.Set(getIdentification, getSaveable.OnSave(), this.gameObject.scene.name);
+                        saveGame.Set(getIdentification, dataString, this.gameObject.scene.name);
                     }
                 }
             }
+
+            hasStateReset = false;
         }
 
         // Request is sent by the Save System
         public void OnLoadRequest(SaveGame saveGame)
         {
-            if (cachedSaveGame != saveGame)
+            if (!hasIdentification)
             {
-                if (cachedSaveGame != null)
-                {
-                    hasLoaded = false;
-                }
-
-                cachedSaveGame = saveGame;
-            }
-
-            if (saveGame == null)
-            {
-                Debug.LogWarning("Invalid save game request");
+                Debug.Log("No identification!");
                 return;
             }
 
@@ -395,11 +418,11 @@ namespace Lowscope.Saving.Components
             {
                 return;
             }
-
-            if (string.IsNullOrEmpty(saveIdentification))
+            else
             {
-                //Debug.LogWarning(string.Format("Save identification is empty on {0}", this.gameObject.name));
-                return;
+                // Ensure it only loads once with the loadOnce
+                // Parameter
+                hasLoaded = true;
             }
 
             int componentCount = saveableComponentIDs.Count;

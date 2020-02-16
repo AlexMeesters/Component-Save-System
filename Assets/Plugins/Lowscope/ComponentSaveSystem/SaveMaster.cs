@@ -6,6 +6,7 @@ using Lowscope.Saving.Core;
 using Lowscope.Saving.Data;
 using Lowscope.Saving.Enums;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 
 namespace Lowscope.Saving
@@ -18,10 +19,10 @@ namespace Lowscope.Saving
     public class SaveMaster : MonoBehaviour
     {
         private static SaveMaster instance;
-        private static SaveInstanceManager saveInstanceManager;
 
         private static GameObject saveMasterTemplate;
-        private static Dictionary<string, SaveInstanceManager> saveInstanceManagers;
+        private static Dictionary<string, SaveInstanceManager> saveInstanceManagers
+            = new Dictionary<string, SaveInstanceManager>();
 
         private static bool isQuittingGame;
 
@@ -36,9 +37,7 @@ namespace Lowscope.Saving
         private static void CreateInstance()
         {
             GameObject saveMasterObject = new GameObject("Save Master");
-            instance = saveMasterObject.AddComponent<SaveMaster>();
-
-            saveInstanceManagers = new Dictionary<string, SaveInstanceManager>();
+            saveMasterObject.AddComponent<SaveMaster>();
 
             SceneManager.sceneLoaded += OnSceneLoaded;
             SceneManager.sceneUnloaded += OnSceneUnloaded;
@@ -68,7 +67,7 @@ namespace Lowscope.Saving
             }
         }
 
-        private static void SpawnInstanceManager(Scene scene)
+        private static SaveInstanceManager SpawnInstanceManager(Scene scene)
         {
             // We spawn a game object seperately, so we can keep it disabled during configuration.
             // This prevents any UnityEngine calls such as Awake or Start
@@ -77,16 +76,14 @@ namespace Lowscope.Saving
 
             var instanceManager = go.AddComponent<SaveInstanceManager>();
             var saveable = go.AddComponent<Saveable>();
-
-            saveable.saveIdentification = string.Format("{0}-{1}", "SaveMaster", scene.name);
-            saveable.AddSaveableComponent("IM", instanceManager);
-            saveInstanceManager = instanceManager;
-
-            saveInstanceManagers.Add(scene.name, saveInstanceManager);
-
             SceneManager.MoveGameObjectToScene(go, scene);
 
+            saveable.SaveIdentification = string.Format("{0}-{1}", "SaveMaster", scene.name);
+            saveable.AddSaveableComponent("IM", instanceManager, true);
+            saveInstanceManagers.Add(scene.name, instanceManager);
+
             go.gameObject.SetActive(true);
+            return instanceManager;
         }
 
         /// <summary>
@@ -174,18 +171,42 @@ namespace Lowscope.Saving
         /// <summary>
         /// Ensure save master has not been set to any slot
         /// </summary>
-        public static void ClearSlot()
+        public static void ClearSlot(bool clearAllListeners = true, bool notifySave = true)
         {
+            if (clearAllListeners)
+            {
+                ClearListeners(notifySave);
+            }
+
             activeSlot = -1;
             activeSaveGame = null;
         }
 
         /// <summary>
-        /// Set the active save slot
+        /// Sets the slot, but does not save the data in the previous slot. This is useful if you want to
+        /// save the active game to a new save slot. Like in older games such as Half-Life.
+        /// </summary>
+        /// <param name="slot"> Slot to switch towards, and copy the current save to </param>
+        /// <param name="saveGame"> Set this if you want to overwrite a specific save file </param>
+        public static void SetSlotAndCopyActiveSave(int slot)
+        {
+            OnSlotChangeBegin.Invoke(slot);
+
+            activeSlot = slot;
+            activeSaveGame = SaveFileUtility.LoadSave(slot, true);
+
+            SyncReset();
+            SyncSave();
+
+            OnSlotChangeDone.Invoke(slot);
+        }
+
+        /// <summary>
+        /// Set the active save slot. (Do note: If you don't want to auto save on slot switch, you can change this in the save setttings)
         /// </summary>
         /// <param name="slot"> Target save slot </param>
-        /// <param name="notifyListeners"> Send a message to all saveables to load the new save file </param>
-        public static void SetSlot(int slot, bool notifyListeners, SaveGame saveGame = null)
+        /// <param name="reloadSaveables"> Send a message to all saveables to load the new save file </param>
+        public static void SetSlot(int slot, bool reloadSaveables, SaveGame saveGame = null)
         {
             if (activeSlot == slot && saveGame == null)
             {
@@ -199,21 +220,32 @@ namespace Lowscope.Saving
                 WriteActiveSaveToDisk();
             }
 
+            if (SaveSettings.Get().cleanSavedPrefabsOnSlotSwitch)
+            {
+                ClearActiveSavedPrefabs();
+            }
+
             if (slot < 0 || slot > SaveSettings.Get().maxSaveSlotCount)
             {
                 Debug.LogWarning("SaveMaster: Attempted to set illegal slot.");
                 return;
             }
 
+            OnSlotChangeBegin.Invoke(slot);
+
             activeSlot = slot;
             activeSaveGame = (saveGame == null) ? SaveFileUtility.LoadSave(slot, true) : saveGame;
 
-            if (notifyListeners)
+            if (reloadSaveables)
             {
                 SyncLoad();
             }
 
+            SyncReset();
+
             PlayerPrefs.SetInt("SM-LastUsedSlot", slot);
+
+            OnSlotChangeDone.Invoke(slot);
         }
 
         public static DateTime GetSaveCreationTime(int slot)
@@ -292,6 +324,8 @@ namespace Lowscope.Saving
         /// </summary>
         public static void WriteActiveSaveToDisk()
         {
+            OnWritingToDiskBegin.Invoke(activeSlot);
+
             if (activeSaveGame != null)
             {
                 for (int i = 0; i < saveables.Count; i++)
@@ -308,10 +342,13 @@ namespace Lowscope.Saving
                     Debug.Log("No save game is currently loaded... So we cannot save it");
                 }
             }
+
+            OnWritingToDiskDone.Invoke(activeSlot);
         }
 
         /// <summary>
-        /// Wipe all data of a specified scene
+        /// Wipe all data of a specified scene. This is useful if you want to reset the saved state of a specific scene.
+        /// Use clearSceneSaveables = true, in case you want to clear it before switching scenes.
         /// </summary>
         /// <param name="name"> Name of the scene </param>
         /// <param name="clearSceneSaveables"> Scan and wipe for any saveable in the scene? Else they might save again upon destruction.
@@ -331,12 +368,27 @@ namespace Lowscope.Saving
                 {
                     if (saveables[i].gameObject.scene.name == name)
                     {
-                        saveables[i].WipeData();
+                        saveables[i].WipeData(activeSaveGame);
                     }
                 }
             }
 
             activeSaveGame.WipeSceneData(name);
+        }
+
+        /// <summary>
+        /// Wipe all data of a specified saveable
+        /// </summary>
+        /// <param name="saveable"></param>
+        public static void WipeSaveable(Saveable saveable)
+        {
+            if (activeSaveGame == null)
+            {
+                Debug.LogError("Failed to wipe scene data: No save game loaded.");
+                return;
+            }
+
+            saveable.WipeData(activeSaveGame);
         }
 
         /// <summary>
@@ -355,6 +407,15 @@ namespace Lowscope.Saving
             }
 
             saveables.Clear();
+        }
+
+        /// <summary>
+        /// Useful in case components have been added to a saveable.
+        /// </summary>
+        /// <param name="saveable"></param>
+        public static void ReloadListener(Saveable saveable)
+        {
+            saveable.OnLoadRequest(activeSaveGame);
         }
 
         /// <summary>
@@ -482,10 +543,54 @@ namespace Lowscope.Saving
             }
         }
 
-        public static GameObject SpawnSavedPrefab(InstanceSource source, string filePath)
+        /// <summary>
+        /// Resets the state of the saveables. As if they have never loaded or saved.
+        /// </summary>
+        public static void SyncReset()
         {
-            return HasActiveSave("Spawning Object") == false ?
-                null : saveInstanceManager.SpawnObject(source, filePath);
+            if (activeSaveGame == null)
+            {
+                Debug.LogWarning("SaveMaster Request Load Failed: " +
+                                 "No active SaveGame has been set. Be sure to call SetSlot(index)");
+                return;
+            }
+
+            int count = saveables.Count;
+
+            for (int i = 0; i < count; i++)
+            {
+                saveables[i].ResetState();
+            }
+        }
+
+        /// <summary>
+        /// Spawn a prefab that will be tracked & saved for a specific scene.
+        /// </summary>
+        /// <param name="source">Methodology to know where prefab came from </param>
+        /// <param name="filePath">This is used to retrieve the prefab again from the designated source. </param>
+        /// <param name="scene">Saved prefabs are bound to a specific scene. Easiest way to reference is by passing through (gameObject.scene).
+        /// By default is uses the active scene. </param>
+        /// <returns> Instance of saved prefab. </returns>
+        public static GameObject SpawnSavedPrefab(InstanceSource source, string filePath, Scene scene = default)
+        {
+            if (!HasActiveSaveLogAction("Spawning Object"))
+            {
+                return null;
+            }
+
+            // If no scene has been specified, it will use the current active scene.
+            if (scene == default(Scene))
+            {
+                scene = SceneManager.GetActiveScene();
+            }
+
+            SaveInstanceManager saveIM;
+            if (!saveInstanceManagers.TryGetValue(scene.name, out saveIM))
+            {
+                saveIM = SpawnInstanceManager(scene);
+            }
+
+            return saveIM.SpawnObject(source, filePath).gameObject;
         }
 
         /// <summary>
@@ -555,7 +660,7 @@ namespace Lowscope.Saving
         /// <param name="value"> Value to store </param>
         public static void SetInt(string key, int value)
         {
-            if (HasActiveSave("Set Int") == false) return;
+            if (HasActiveSaveLogAction("Set Int") == false) return;
             activeSaveGame.Set(string.Format("IVar-{0}", key), value.ToString(), "Global");
         }
 
@@ -567,7 +672,7 @@ namespace Lowscope.Saving
         /// <returns> Stored value </returns>
         public static int GetInt(string key, int defaultValue = -1)
         {
-            if (HasActiveSave("Get Int") == false) return defaultValue;
+            if (HasActiveSaveLogAction("Get Int") == false) return defaultValue;
             var getData = activeSaveGame.Get(string.Format("IVar-{0}", key));
             return string.IsNullOrEmpty((getData)) ? defaultValue : int.Parse(getData);
         }
@@ -579,7 +684,7 @@ namespace Lowscope.Saving
         /// <param name="value"> Value to store </param>
         public static void SetFloat(string key, float value)
         {
-            if (HasActiveSave("Set Float") == false) return;
+            if (HasActiveSaveLogAction("Set Float") == false) return;
             activeSaveGame.Set(string.Format("FVar-{0}", key), value.ToString(), "Global");
         }
 
@@ -591,7 +696,7 @@ namespace Lowscope.Saving
         /// <returns> Stored value </returns>
         public static float GetFloat(string key, float defaultValue = -1)
         {
-            if (HasActiveSave("Get Float") == false) return defaultValue;
+            if (HasActiveSaveLogAction("Get Float") == false) return defaultValue;
             var getData = activeSaveGame.Get(string.Format("FVar-{0}", key));
             return string.IsNullOrEmpty((getData)) ? defaultValue : float.Parse(getData);
         }
@@ -603,7 +708,7 @@ namespace Lowscope.Saving
         /// <param name="value"> Value to store </param>
         public static void SetString(string key, string value)
         {
-            if (HasActiveSave("Set String") == false) return;
+            if (HasActiveSaveLogAction("Set String") == false) return;
             activeSaveGame.Set(string.Format("SVar-{0}", key), value, "Global");
         }
 
@@ -615,12 +720,12 @@ namespace Lowscope.Saving
         /// <returns> Stored value </returns>
         public static string GetString(string key, string defaultValue = "")
         {
-            if (HasActiveSave("Get String") == false) return defaultValue;
+            if (HasActiveSaveLogAction("Get String") == false) return defaultValue;
             var getData = activeSaveGame.Get(string.Format("SVar-{0}", key));
             return string.IsNullOrEmpty((getData)) ? defaultValue : getData;
         }
 
-        private static bool HasActiveSave(string action)
+        private static bool HasActiveSaveLogAction(string action)
         {
             if (SaveMaster.GetActiveSlot() == -1)
             {
@@ -631,15 +736,71 @@ namespace Lowscope.Saving
             else return true;
         }
 
+        /// <summary>
+        /// Clean all currently saved prefabs. Useful when switching scenes.
+        /// </summary>
+        private static void ClearActiveSavedPrefabs()
+        {
+            int totalLoadedScenes = SceneManager.sceneCount;
+
+            for (int i = 0; i < totalLoadedScenes; i++)
+            {
+                Scene scene = SceneManager.GetSceneAt(i);
+                SaveInstanceManager saveIM;
+
+                if (saveInstanceManagers.TryGetValue(scene.name, out saveIM))
+                {
+                    saveIM.DestroyAllObjects();
+                }
+            }
+        }
+
+        // Events
+
+        /// <summary>
+        /// Gets called after current saveables gets saved and written to disk.
+        /// You can start loading scenes based on this callback.
+        /// </summary>
+        public static System.Action<int> OnSlotChangeBegin
+        {
+            get { return instance.onSlotChangeBegin; }
+            set { instance.onSlotChangeBegin = value; }
+        }
+
+        public static System.Action<int> OnSlotChangeDone
+        {
+            get { return instance.onSlotChangeDone; }
+            set { instance.onSlotChangeDone = value; }
+        }
+
+        public static System.Action<int> OnWritingToDiskBegin
+        {
+            get { return instance.onWritingToDiskBegin; }
+            set { instance.onWritingToDiskBegin = value; }
+        }
+
+        public static System.Action<int> OnWritingToDiskDone
+        {
+            get { return instance.onWritingToDiskDone; }
+            set { instance.onWritingToDiskDone = value; }
+        }
+
+        private System.Action<int> onSlotChangeBegin = delegate { };
+        private System.Action<int> onSlotChangeDone = delegate { };
+        private System.Action<int> onWritingToDiskBegin = delegate { };
+        private System.Action<int> onWritingToDiskDone = delegate { };
+
         private void Awake()
         {
-            if (this == instance)
+            if (instance != null)
             {
                 Debug.LogWarning("Duplicate save master found. " +
                                  "Ensure that the save master has not been added anywhere in your scene.");
                 GameObject.Destroy(this.gameObject);
                 return;
             }
+
+            instance = this;
 
             var settings = SaveSettings.Get();
 
