@@ -315,8 +315,6 @@ namespace Lowscope.Saving.Components
             {
                 SaveMaster.AddListener(this);
             }
-
-            hasIdentification = !string.IsNullOrEmpty(saveIdentification);
         }
 
         private void OnDestroy()
@@ -408,12 +406,6 @@ namespace Lowscope.Saving.Components
         // Request is sent by the Save System
         public void OnLoadRequest(SaveGame saveGame)
         {
-            if (!hasIdentification)
-            {
-                Debug.Log("No identification!");
-                return;
-            }
-
             if (loadOnce && hasLoaded)
             {
                 return;
@@ -423,6 +415,13 @@ namespace Lowscope.Saving.Components
                 // Ensure it only loads once with the loadOnce
                 // Parameter
                 hasLoaded = true;
+                hasIdentification = !string.IsNullOrEmpty(saveIdentification);
+            }
+
+            if (!hasIdentification)
+            {
+                Debug.Log("No identification!");
+                return;
             }
 
             int componentCount = saveableComponentIDs.Count;

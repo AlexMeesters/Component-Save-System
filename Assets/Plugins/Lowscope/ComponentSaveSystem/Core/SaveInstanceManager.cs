@@ -4,6 +4,7 @@ using Lowscope.Saving.Components;
 using Lowscope.Saving.Enums;
 using Lowscope.Saving.Data;
 using UnityEngine.SceneManagement;
+using System;
 
 namespace Lowscope.Saving.Core
 {
@@ -20,6 +21,10 @@ namespace Lowscope.Saving.Core
 
         private int spawnCountHistory;
         private int changesMade;
+
+        public string SceneID { set; get; }
+        public Saveable Saveable { set; get; }
+        public int LoadedIDCount { get { return loadedIDs.Count; } }
 
         [System.Serializable]
         public class SaveData
@@ -123,7 +128,7 @@ namespace Lowscope.Saving.Core
             // Then we give it a new identification, and we store it into our spawninfo array so we know to spawn it again.
             if (string.IsNullOrEmpty(saveIdentification))
             {
-                saveable.SaveIdentification = string.Format("{0}-{1}-{2}", this.gameObject.scene.name, saveable.name, spawnCountHistory);
+                saveable.SaveIdentification = string.Format("{0}-{1}-{2}", SceneID, saveable.name, spawnCountHistory);
 
                 spawnInfo.Add(savedInstance, new SpawnInfo()
                 {

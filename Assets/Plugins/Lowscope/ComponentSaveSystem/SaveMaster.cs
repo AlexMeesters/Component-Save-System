@@ -21,8 +21,13 @@ namespace Lowscope.Saving
         private static SaveMaster instance;
 
         private static GameObject saveMasterTemplate;
-        private static Dictionary<string, SaveInstanceManager> saveInstanceManagers
-            = new Dictionary<string, SaveInstanceManager>();
+
+        // Used to track duplicate scenes.
+        private static Dictionary<string, int> loadedSceneNames = new Dictionary<string, int>();
+        private static HashSet<int> duplicatedSceneHandles = new HashSet<int>();
+
+        private static Dictionary<int, SaveInstanceManager> saveInstanceManagers
+            = new Dictionary<int, SaveInstanceManager>();
 
         private static bool isQuittingGame;
 
@@ -53,22 +58,71 @@ namespace Lowscope.Saving
 
         private static void OnSceneUnloaded(Scene scene)
         {
-            if (saveInstanceManagers.ContainsKey(scene.name))
+            // If it is a duplicate scene, we just remove this handle.
+            if (duplicatedSceneHandles.Contains(scene.handle))
             {
-                saveInstanceManagers.Remove(scene.name);
+                duplicatedSceneHandles.Remove(scene.handle);
+            }
+            else
+            {
+                if (loadedSceneNames.ContainsKey(scene.name))
+                {
+                    loadedSceneNames.Remove(scene.name);
+                }
+            }
+
+            if (saveInstanceManagers.ContainsKey(scene.handle))
+            {
+                saveInstanceManagers.Remove(scene.handle);
             }
         }
 
         private static void OnSceneLoaded(Scene scene, LoadSceneMode arg1)
         {
-            if (!saveInstanceManagers.ContainsKey(scene.name))
+            // Store a refeference to a non-duplicate scene
+            if (!loadedSceneNames.ContainsKey(scene.name))
             {
-                SpawnInstanceManager(scene);
+                loadedSceneNames.Add(scene.name, scene.handle);
+            }
+            else
+            {
+                // These scenes are marked as duplicates. They need special treatment for saving.
+                duplicatedSceneHandles.Add(scene.handle);
+            }
+
+            // Dont create save instance manager if there are no saved instances in the scene.
+            if (string.IsNullOrEmpty(activeSaveGame.Get(string.Format("SaveMaster-{0}-IM", scene.name))))
+            {
+                return;
+            }
+
+            if (!saveInstanceManagers.ContainsKey(scene.handle))
+            {
+                var instanceManager = SpawnInstanceManager(scene);
             }
         }
 
-        private static SaveInstanceManager SpawnInstanceManager(Scene scene)
+        /// <summary>
+        /// You only need to call this for scenes with a duplicate name. If you have a duplicate ID, you can then 
+        /// assign a ID to it. And it will save the data of the saveable to that ID instead.
+        /// </summary>
+        /// <param name="scene">  </param>
+        /// <param name="id"> Add a extra indentification for the scene. Useful for duplicated scenes. </param>
+        /// <returns></returns>
+        public static SaveInstanceManager SpawnInstanceManager(Scene scene, string id = "")
         {
+            // Safety precautions.
+            if (!string.IsNullOrEmpty(id) && duplicatedSceneHandles.Contains(scene.handle))
+            {
+                duplicatedSceneHandles.Remove(scene.handle);
+            }
+
+            // Already exists
+            if (saveInstanceManagers.ContainsKey(scene.handle))
+            {
+                return null;
+            }
+
             // We spawn a game object seperately, so we can keep it disabled during configuration.
             // This prevents any UnityEngine calls such as Awake or Start
             var go = new GameObject("Save Instance Manager");
@@ -78,9 +132,14 @@ namespace Lowscope.Saving
             var saveable = go.AddComponent<Saveable>();
             SceneManager.MoveGameObjectToScene(go, scene);
 
-            saveable.SaveIdentification = string.Format("{0}-{1}", "SaveMaster", scene.name);
+            string saveID = string.IsNullOrEmpty(id) ? scene.name : string.Format("{0}-{1}", scene.name, id);
+
+            saveable.SaveIdentification = string.Format("{0}-{1}", "SaveMaster", saveID);
             saveable.AddSaveableComponent("IM", instanceManager, true);
-            saveInstanceManagers.Add(scene.name, instanceManager);
+            saveInstanceManagers.Add(scene.handle, instanceManager);
+
+            instanceManager.SceneID = saveID;
+            instanceManager.Saveable = saveable;
 
             go.gameObject.SetActive(true);
             return instanceManager;
@@ -582,10 +641,17 @@ namespace Lowscope.Saving
             if (scene == default(Scene))
             {
                 scene = SceneManager.GetActiveScene();
+            } 
+
+            if (duplicatedSceneHandles.Contains(scene.handle))
+            {
+                Debug.Log(string.Format("Following scene has a duplicate name: {0}. " +
+                    "Ensure to call SaveMaster.SpawnInstanceManager(scene, id) with a custom ID after spawning the scene.", scene.name));
+                scene = SceneManager.GetActiveScene();
             }
 
             SaveInstanceManager saveIM;
-            if (!saveInstanceManagers.TryGetValue(scene.name, out saveIM))
+            if (!saveInstanceManagers.TryGetValue(scene.handle, out saveIM))
             {
                 saveIM = SpawnInstanceManager(scene);
             }
@@ -748,7 +814,7 @@ namespace Lowscope.Saving
                 Scene scene = SceneManager.GetSceneAt(i);
                 SaveInstanceManager saveIM;
 
-                if (saveInstanceManagers.TryGetValue(scene.name, out saveIM))
+                if (saveInstanceManagers.TryGetValue(scene.handle, out saveIM))
                 {
                     saveIM.DestroyAllObjects();
                 }
