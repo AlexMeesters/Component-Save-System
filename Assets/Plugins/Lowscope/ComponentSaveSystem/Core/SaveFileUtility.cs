@@ -4,6 +4,10 @@ using System.IO;
 using System.Linq;
 using Lowscope.Saving.Data;
 
+#if UNITY_WEBGL
+using System.Runtime.InteropServices;
+#endif
+
 namespace Lowscope.Saving.Core
 {
     public class SaveFileUtility
