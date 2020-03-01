@@ -58,6 +58,9 @@ namespace Lowscope.Saving
 
         private static void OnSceneUnloaded(Scene scene)
         {
+            if (activeSaveGame == null)
+                return;
+
             // If it is a duplicate scene, we just remove this handle.
             if (duplicatedSceneHandles.Contains(scene.handle))
             {
@@ -79,6 +82,9 @@ namespace Lowscope.Saving
 
         private static void OnSceneLoaded(Scene scene, LoadSceneMode arg1)
         {
+            if (activeSaveGame == null)
+                return;
+
             // Store a refeference to a non-duplicate scene
             if (!loadedSceneNames.ContainsKey(scene.name))
             {
