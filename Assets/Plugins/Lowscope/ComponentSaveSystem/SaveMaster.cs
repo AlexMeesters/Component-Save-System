@@ -636,7 +636,7 @@ namespace Lowscope.Saving
         /// <param name="scene">Saved prefabs are bound to a specific scene. Easiest way to reference is by passing through (gameObject.scene).
         /// By default is uses the active scene. </param>
         /// <returns> Instance of saved prefab. </returns>
-        public static GameObject SpawnSavedPrefab(InstanceSource source, string filePath, Scene scene = default)
+        public static GameObject SpawnSavedPrefab(InstanceSource source, string filePath, Scene scene = default(Scene))
         {
             if (!HasActiveSaveLogAction("Spawning Object"))
             {
