@@ -62,9 +62,9 @@ namespace Lowscope.Saving
                 return;
 
             // If it is a duplicate scene, we just remove this handle.
-            if (duplicatedSceneHandles.Contains(scene.handle))
+            if (duplicatedSceneHandles.Contains(scene.GetHashCode()))
             {
-                duplicatedSceneHandles.Remove(scene.handle);
+                duplicatedSceneHandles.Remove(scene.GetHashCode());
             }
             else
             {
@@ -74,9 +74,9 @@ namespace Lowscope.Saving
                 }
             }
 
-            if (saveInstanceManagers.ContainsKey(scene.handle))
+            if (saveInstanceManagers.ContainsKey(scene.GetHashCode()))
             {
-                saveInstanceManagers.Remove(scene.handle);
+                saveInstanceManagers.Remove(scene.GetHashCode());
             }
         }
 
@@ -88,12 +88,12 @@ namespace Lowscope.Saving
             // Store a refeference to a non-duplicate scene
             if (!loadedSceneNames.ContainsKey(scene.name))
             {
-                loadedSceneNames.Add(scene.name, scene.handle);
+                loadedSceneNames.Add(scene.name, scene.GetHashCode());
             }
             else
             {
                 // These scenes are marked as duplicates. They need special treatment for saving.
-                duplicatedSceneHandles.Add(scene.handle);
+                duplicatedSceneHandles.Add(scene.GetHashCode());
             }
 
             // Dont create save instance manager if there are no saved instances in the scene.
@@ -102,7 +102,7 @@ namespace Lowscope.Saving
                 return;
             }
 
-            if (!saveInstanceManagers.ContainsKey(scene.handle))
+            if (!saveInstanceManagers.ContainsKey(scene.GetHashCode()))
             {
                 var instanceManager = SpawnInstanceManager(scene);
             }
@@ -118,13 +118,13 @@ namespace Lowscope.Saving
         public static SaveInstanceManager SpawnInstanceManager(Scene scene, string id = "")
         {
             // Safety precautions.
-            if (!string.IsNullOrEmpty(id) && duplicatedSceneHandles.Contains(scene.handle))
+            if (!string.IsNullOrEmpty(id) && duplicatedSceneHandles.Contains(scene.GetHashCode()))
             {
-                duplicatedSceneHandles.Remove(scene.handle);
+                duplicatedSceneHandles.Remove(scene.GetHashCode());
             }
 
             // Already exists
-            if (saveInstanceManagers.ContainsKey(scene.handle))
+            if (saveInstanceManagers.ContainsKey(scene.GetHashCode()))
             {
                 return null;
             }
@@ -142,7 +142,7 @@ namespace Lowscope.Saving
 
             saveable.SaveIdentification = string.Format("{0}-{1}", "SaveMaster", saveID);
             saveable.AddSaveableComponent("IM", instanceManager, true);
-            saveInstanceManagers.Add(scene.handle, instanceManager);
+            saveInstanceManagers.Add(scene.GetHashCode(), instanceManager);
 
             instanceManager.SceneID = saveID;
             instanceManager.Saveable = saveable;
@@ -649,7 +649,7 @@ namespace Lowscope.Saving
                 scene = SceneManager.GetActiveScene();
             } 
 
-            if (duplicatedSceneHandles.Contains(scene.handle))
+            if (duplicatedSceneHandles.Contains(scene.GetHashCode()))
             {
                 Debug.Log(string.Format("Following scene has a duplicate name: {0}. " +
                     "Ensure to call SaveMaster.SpawnInstanceManager(scene, id) with a custom ID after spawning the scene.", scene.name));
@@ -657,7 +657,7 @@ namespace Lowscope.Saving
             }
 
             SaveInstanceManager saveIM;
-            if (!saveInstanceManagers.TryGetValue(scene.handle, out saveIM))
+            if (!saveInstanceManagers.TryGetValue(scene.GetHashCode(), out saveIM))
             {
                 saveIM = SpawnInstanceManager(scene);
             }
@@ -820,7 +820,7 @@ namespace Lowscope.Saving
                 Scene scene = SceneManager.GetSceneAt(i);
                 SaveInstanceManager saveIM;
 
-                if (saveInstanceManagers.TryGetValue(scene.handle, out saveIM))
+                if (saveInstanceManagers.TryGetValue(scene.GetHashCode(), out saveIM))
                 {
                     saveIM.DestroyAllObjects();
                 }

@@ -12,8 +12,6 @@ namespace Lowscope.Saving.Core
 {
     public class SaveFileUtility
     {
-
-
         // Saving with WebGL requires a seperate DLL, which is included in the plugin.
 #if UNITY_WEBGL
     [DllImport("__Internal")]
