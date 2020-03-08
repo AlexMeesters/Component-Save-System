@@ -890,6 +890,22 @@ namespace Lowscope.Saving
             {
                 StartCoroutine(TrackHotkeyUsage());
             }
+
+            if (settings.saveOnInterval)
+            {
+                StartCoroutine(AutoSaveGame());
+            }
+        }
+
+        private IEnumerator AutoSaveGame()
+        {
+            WaitForSeconds wait = new WaitForSeconds(SaveSettings.Get().saveIntervalTime);
+
+            while (true)
+            {
+                yield return wait;
+                WriteActiveSaveToDisk();
+            }
         }
 
         private IEnumerator TrackHotkeyUsage()

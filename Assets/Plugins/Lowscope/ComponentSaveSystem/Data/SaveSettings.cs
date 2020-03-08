@@ -120,6 +120,12 @@ namespace Lowscope.Saving.Data
         [Tooltip("Should the game get saved when switching between game saves?")]
         public bool autoSaveOnSlotSwitch = true;
 
+        [Header("Auto Save")]
+        [Tooltip("Automatically save to the active slot based on a time interval, useful for WEBGL games")]
+        public bool saveOnInterval = false;
+        [Tooltip("Time interval in seconds before the autosave happens"), Range(1, 3000)]
+        public int saveIntervalTime = 1;
+
         [Header("Saveable")]
         [Tooltip("Will do a check if object has already been instantiated with the ID")]
         public bool resetSaveableIdOnDuplicate = true;
